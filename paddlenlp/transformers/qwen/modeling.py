@@ -22,9 +22,11 @@ import paddle.distributed.fleet.meta_parallel as mpu
 import paddle.nn.functional as F
 from paddle import Tensor, nn
 from paddle.distributed import fleet
+from paddle.distributed.fleet.layers.mpu.random import get_rng_state_tracker
 from paddle.distributed.fleet.utils import recompute
 from paddle.utils import try_import
 
+from paddlenlp.transformers.long_sequence_strategies import LongSequenceStrategies
 from paddlenlp.transformers.model_outputs import (
     BaseModelOutputWithPast,
     CausalLMOutputWithPast,
@@ -145,7 +147,14 @@ class QWenAttention(nn.Layer):
             assert config.rotary_pct < 1
             self.rotary_ndims = int(self.hidden_size_per_attention_head * config.rotary_pct)
         dim = self.rotary_ndims if self.rotary_ndims is not None else self.hidden_size_per_attention_head
-        self.rotary_emb = RotaryEmbedding(dim, base=config.rotary_emb_base)
+        if config.use_long_sequence_strategies:
+            self.rotary_emb = LongSequenceStrategies.build_long_sequence_strategy(
+                config.long_sequence_strategy_type,
+                config.long_sequence_strategy_name,
+                **config.long_sequence_init_args,
+            )
+        else:
+            self.rotary_emb = RotaryEmbedding(dim, base=config.rotary_emb_base)
 
         self.use_dynamic_ntk = config.use_dynamic_ntk
         self.use_logn_attn = config.use_logn_attn
@@ -243,7 +252,6 @@ class QWenAttention(nn.Layer):
         query = self._split_heads(query, self.num_heads, self.head_dim)
         key = self._split_heads(key, self.num_heads, self.head_dim)
         value = self._split_heads(value, self.num_heads, self.head_dim)
-
         kv_seq_len = hidden_states.shape[1]
         if layer_past:
             # layer past[0] shape: bs * seq_len * head_num * dim
@@ -255,7 +263,11 @@ class QWenAttention(nn.Layer):
             self._ntk_cached = ntk_alpha
         else:
             ntk_alpha = self._ntk_cached
-        rotary_pos_emb = self.rotary_emb(value, kv_seq_len, ntk_alpha=ntk_alpha)
+        if self.config.use_long_sequence_strategies:
+            cos, sin = self.rotary_emb(seq_len=kv_seq_len, ntk_alpha=ntk_alpha)
+            rotary_pos_emb = (cos[None, :, None, :], sin[None, :, None, :])
+        else:
+            rotary_pos_emb = self.rotary_emb(value, kv_seq_len, ntk_alpha=ntk_alpha)
 
         if rotary_pos_emb is not None:
             if isinstance(rotary_pos_emb, tuple):
@@ -773,10 +785,17 @@ class QWenLMHead(nn.Layer):
         else:
             vocab_size = config.vocab_size
 
-        self.weight = self.create_parameter(
-            shape=[config.hidden_size, vocab_size],
-            dtype=paddle.get_default_dtype(),
-        )
+        if vocab_size != config.vocab_size:
+            with get_rng_state_tracker().rng_state():
+                self.weight = self.create_parameter(
+                    shape=[config.hidden_size, vocab_size],
+                    dtype=paddle.get_default_dtype(),
+                )
+        else:
+            self.weight = self.create_parameter(
+                shape=[config.hidden_size, vocab_size],
+                dtype=paddle.get_default_dtype(),
+            )
         # Must set distributed attr for Tensor Parallel !
         self.weight.is_distributed = True if (vocab_size != config.vocab_size) else False
         if self.weight.is_distributed:
