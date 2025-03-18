@@ -35,27 +35,20 @@ except ImportError:
 
 try:
     from paddle.distributed.fleet.utils.sequence_parallel_utils import (
-        ColumnSequenceParallelLinear,
         GatherOp,
-        RowSequenceParallelLinear,
         ScatterOp,
         mark_as_sequence_parallel_parameter,
     )
 except:
     pass
 
-from paddlenlp.transformers.conversion_utils import (
-    StateDictNameMapping,
-    init_name_mappings,
-)
-from paddlenlp.transformers.model_outputs import (
-    MoECausalLMOutputWithPast,
-    MoEModelOutputWithPast,
-)
-from paddlenlp.transformers.model_utils import PretrainedModel, register_base_model
-from paddlenlp.utils.log import logger
-
+from ...utils.log import logger
+from .. import linear_utils
 from ..activations import ACT2FN
+from ..conversion_utils import StateDictNameMapping, init_name_mappings
+from ..linear_utils import Linear
+from ..model_outputs import MoECausalLMOutputWithPast, MoEModelOutputWithPast
+from ..model_utils import PretrainedModel, register_base_model
 from .configuration import MixtralConfig
 
 try:
@@ -306,7 +299,7 @@ def scaled_dot_product_attention(
 
 def masked_fill(x, mask, value):
     y = paddle.full(x.shape, value, x.dtype)
-    return paddle.where(mask, y, x)
+    return paddle.where(mask.to("bool"), y, x)
 
 
 def is_casual_mask(attention_mask):
@@ -456,11 +449,11 @@ class MixtralMLP(nn.Layer):
         self.tensor_parallel_degree = config.tensor_parallel_degree
 
         if config.sequence_parallel:
-            ColumnParallelLinear = ColumnSequenceParallelLinear
-            RowParallelLinear = RowSequenceParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnSequenceParallelLinear
+            RowParallelLinear = linear_utils.RowSequenceParallelLinear
         else:
-            ColumnParallelLinear = fleet.meta_parallel.ColumnParallelLinear
-            RowParallelLinear = fleet.meta_parallel.RowParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnParallelLinear
+            RowParallelLinear = linear_utils.RowParallelLinear
 
         if config.tensor_parallel_degree > 1:
             self.w1 = ColumnParallelLinear(
@@ -482,9 +475,9 @@ class MixtralMLP(nn.Layer):
                 has_bias=False,
             )
         else:
-            self.w1 = nn.Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
-            self.w2 = nn.Linear(self.intermediate_size, self.hidden_size, bias_attr=False)
-            self.w3 = nn.Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
+            self.w1 = Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
+            self.w2 = Linear(self.intermediate_size, self.hidden_size, bias_attr=False)
+            self.w3 = Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
 
         self.act_fn = ACT2FN[config.hidden_act]
 
@@ -501,7 +494,7 @@ class MixtralSparseMoeBlock(nn.Layer):
         self.ffn_dim = config.intermediate_size
         self.num_experts = config.num_local_experts
         self.top_k = config.num_experts_per_tok
-        self.gate = nn.Linear(self.hidden_dim, self.num_experts, bias_attr=False)
+        self.gate = Linear(self.hidden_dim, self.num_experts, bias_attr=False)
         self.experts = nn.LayerList([MixtralMLP(config) for _ in range(self.num_experts)])
 
     def forward(self, hidden_states):
@@ -526,7 +519,7 @@ class MixtralSparseMoeBlock(nn.Layer):
         # this will be used to easily index which expert is going to be sollicitated.
         # shape: [num_experts, top_k, batch_size * seq_len]
         expert_mask = F.one_hot(selected_experts, num_classes=self.num_experts).transpose([2, 1, 0])
-
+        expert_mask = expert_mask.to("bool")
         # Loop over all available experts in the model and perform the computation on each expert.
         for expert_id in range(self.num_experts):
             expert_layer = self.experts[expert_id]
@@ -594,11 +587,11 @@ class MixtralAttention(nn.Layer):
                 self.use_fused_rope = False
 
         if config.sequence_parallel:
-            ColumnParallelLinear = ColumnSequenceParallelLinear
-            RowParallelLinear = RowSequenceParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnSequenceParallelLinear
+            RowParallelLinear = linear_utils.RowSequenceParallelLinear
         else:
-            ColumnParallelLinear = fleet.meta_parallel.ColumnParallelLinear
-            RowParallelLinear = fleet.meta_parallel.RowParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnParallelLinear
+            RowParallelLinear = linear_utils.RowParallelLinear
 
         if config.tensor_parallel_degree > 1:
             self.q_proj = ColumnParallelLinear(
@@ -620,17 +613,17 @@ class MixtralAttention(nn.Layer):
                 gather_output=False,
             )
         else:
-            self.q_proj = nn.Linear(
+            self.q_proj = Linear(
                 self.hidden_size,
                 self.hidden_size,
                 bias_attr=False,
             )
-            self.k_proj = nn.Linear(
+            self.k_proj = Linear(
                 self.hidden_size,
                 self.config.num_key_value_heads * self.head_dim,
                 bias_attr=False,
             )
-            self.v_proj = nn.Linear(
+            self.v_proj = Linear(
                 self.hidden_size,
                 self.config.num_key_value_heads * self.head_dim,
                 bias_attr=False,
@@ -644,7 +637,7 @@ class MixtralAttention(nn.Layer):
                 input_is_parallel=True,
             )
         else:
-            self.o_proj = nn.Linear(
+            self.o_proj = Linear(
                 self.hidden_size,
                 self.hidden_size,
                 bias_attr=False,
@@ -999,8 +992,8 @@ class MixtralPretrainedModel(PretrainedModel):
                 mpu.ColumnParallelLinear,
                 mpu.RowParallelLinear,
                 MixtralLMHead,
-                ColumnSequenceParallelLinear,
-                RowSequenceParallelLinear,
+                linear_utils.ColumnSequenceParallelLinear,
+                linear_utils.RowSequenceParallelLinear,
             ),
         ):
             # In the dygraph mode, use the `set_value` to reset the parameter directly,
@@ -1105,7 +1098,7 @@ class MixtralModel(MixtralPretrainedModel):
                 past_key_values_length=past_key_values_length,
             )
         # Convert bool attention_mask to float attention mask, which will be added to attention_scores later
-        expanded_attn_mask = paddle.where(expanded_attn_mask, 0.0, paddle.finfo(dtype).min).astype(dtype)
+        expanded_attn_mask = paddle.where(expanded_attn_mask.to("bool"), 0.0, paddle.finfo(dtype).min).astype(dtype)
         return expanded_attn_mask
 
     @paddle.jit.not_to_static
@@ -1504,9 +1497,7 @@ class MixtralForCausalLM(MixtralPretrainedModel):
 
         # if labels is None，means we need full output, instead of tensor_parallel_output
         # tensor_parallel_output is togather with ParallelCrossEntropy
-        tensor_parallel_output = (
-            self.config.tensor_parallel_output and labels is not None and self.config.tensor_parallel_degree > 1
-        )
+        tensor_parallel_output = self.config.tensor_parallel_output and self.config.tensor_parallel_degree > 1
 
         logits = self.lm_head(hidden_states, tensor_parallel_output=tensor_parallel_output)
 

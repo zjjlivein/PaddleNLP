@@ -235,6 +235,7 @@ class LlmMetaConfig:
         ("use_fused_rope", bool, False, "Enable rope fusion or not."),
         ("use_fused_linear", bool, False, "GPT3 model, use fused linear layer"),
         ("use_fused_dropout_add", bool, False, "GPT3 model, use fused `dropout + residual add` op."),
+        ("use_fused_linear_cross_entropy", bool, False, "use fused `linear + cross_entropy` fuse op."),
     ]
 
     hybrid_parallel_attributes = [
@@ -268,6 +269,14 @@ class LlmMetaConfig:
             "Recompute granularity, Choose among ['full', 'core_attn', 'full_attn']",
         ),
         ("recompute_use_reentrant", bool, False, "recompute_use_reentrant"),
+        # refined_recompute attributes
+        (
+            "refined_recompute",
+            str,
+            "",
+            "refined_recompute, Choose from 'mlp_row_ln', 'mlp_column_ln', 'attention_row_ln', 'attention_column_ln', 'flash_attn']",
+        ),
+        ("offload_recompute_inputs", bool, False, "offload_recompute_inputs"),
     ]
 
     @classmethod
@@ -297,7 +306,7 @@ class LlmMetaConfig:
         return ret
 
     @classmethod
-    def _get_nonsavable_keys(cls):
+    def _get_unsavable_keys(cls):
         ret = set()
         for attrs in [
             cls.op_fusion_attributes,
@@ -516,7 +525,7 @@ class PretrainedConfig:
     _auto_class: Optional[str] = None
 
     # Fix me, it is global for all config
-    _nonsavable_keys = set()
+    _unsavable_keys = set()
 
     def __setattr__(self, key, value):
         if key in super().__getattribute__("attribute_map"):
@@ -542,7 +551,8 @@ class PretrainedConfig:
         kwargs = attribute_map(self, kwargs=kwargs)
         kwargs.pop("transformers_version", None)
         llm_meta = LlmMetaConfig._get_defaults()
-        self._nonsavable_keys.update(LlmMetaConfig._get_nonsavable_keys())
+        self._unsavable_keys.update(LlmMetaConfig._get_unsavable_keys())
+        self._unsavable_keys.remove("tensor_parallel_degree")
 
         kwargs = set_expected_keys(self, llm_meta, kwargs)
         if self.sequence_parallel:
@@ -825,7 +835,8 @@ class PretrainedConfig:
 
         # Get config dict associated with the base config file
         config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
-
+        if config_dict is None:
+            return {}, kwargs
         # That config file may point us toward another config file to use.
         if "configuration_files" in config_dict:
             original_kwargs["cache_dir"] = os.path.join(cache_dir, pretrained_model_name_or_path, subfolder)
@@ -874,9 +885,8 @@ class PretrainedConfig:
             from_aistudio=from_aistudio,
             from_hf_hub=from_hf_hub,
         )
-        assert (
-            resolved_config_file is not None
-        ), f"please make sure one of the {filenames} under {pretrained_model_name_or_path}"
+        if resolved_config_file is None:
+            return None, kwargs
         try:
             logger.info(f"Loading configuration file {resolved_config_file}")
             # Load config dict
@@ -1011,14 +1021,14 @@ class PretrainedConfig:
 
         return serializable_config_dict
 
-    def register_nonsaveable_keys(self, keys):
+    def register_unsavable_keys(self, keys):
         # Save: not save it in any case
         # Print: show it if non defalut value
         if type(keys) == list or type(keys) == tuple:
             for key in keys:
-                self._nonsavable_keys.add(key)
+                self._unsavable_keys.add(key)
         else:
-            self._nonsavable_keys.add(keys)
+            self._unsavable_keys.add(keys)
 
     def to_dict(self, saving_file=False) -> Dict[str, Any]:
         """
@@ -1032,6 +1042,8 @@ class PretrainedConfig:
             output["model_type"] = self.__class__.model_type
         if "_auto_class" in output:
             del output["_auto_class"]
+        if "moe_group" in output:
+            del output["moe_group"]
 
         # PaddleNLP version when serializing the model
         output["paddlenlp_version"] = __version__
@@ -1045,9 +1057,9 @@ class PretrainedConfig:
             output[key] = value
 
         # Fix for rewrited from_pretrained method, hasattr
-        if saving_file and hasattr(self, "_nonsavable_keys"):
+        if saving_file and hasattr(self, "_unsavable_keys"):
             for key in list(output.keys()):
-                if key in self._nonsavable_keys:
+                if key in self._unsavable_keys:
                     output.pop(key)
 
         if hasattr(self, "quantization_config"):

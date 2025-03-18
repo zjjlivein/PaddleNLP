@@ -7,7 +7,7 @@
 ------------------------------------------------------------------------------------------
 
 <p align="center">
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
+    <a href="https://paddlenlp.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/paddlenlp/badge/?version=latest">
     <a href="https://github.com/PaddlePaddle/PaddleNLP/releases"><img src="https://img.shields.io/github/v/release/PaddlePaddle/PaddleNLP?color=ffa"></a>
     <a href=""><img src="https://img.shields.io/badge/python-3.7+-aff.svg"></a>
     <a href=""><img src="https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-pink.svg"></a>
@@ -16,39 +16,177 @@
     <a href="https://pypi.org/project/paddlenlp/"><img src="https://img.shields.io/pypi/dm/paddlenlp?color=9cf"></a>
     <a href="https://github.com/PaddlePaddle/PaddleNLP/issues"><img src="https://img.shields.io/github/issues/PaddlePaddle/PaddleNLP?color=9cc"></a>
     <a href="https://github.com/PaddlePaddle/PaddleNLP/stargazers"><img src="https://img.shields.io/github/stars/PaddlePaddle/PaddleNLP?color=ccf"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
 </p>
 
-
 <h4 align="center">
+  <a href=#特性> 特性 </a> |
+  <a href=#模型支持> 模型支持 </a> |
   <a href=#安装> 安装 </a> |
   <a href=#快速开始> 快速开始 </a> |
-  <a href=#特性> 特性 </a> |
   <a href=#社区交流> 社区交流 </a>
 </h4>
 
-**PaddleNLP**是一款**简单易用**且**功能强大**的自然语言处理和大语言模型(LLM)开发库。聚合业界**优质预训练模型**并提供**开箱即用**的开发体验，覆盖NLP多场景的模型库搭配**产业实践范例**可满足开发者**灵活定制**的需求。
+**PaddleNLP**是一款基于飞桨深度学习框架的大语言模型(LLM)开发套件，支持在多种硬件上进行高效的大模型训练、无损压缩以及高性能推理。PaddleNLP 具备**简单易用**和**性能极致**的特点，致力于助力开发者实现高效的大模型产业级应用。
+
+<a href="https://trendshift.io/repositories/2246" target="_blank"><img src="https://trendshift.io/api/badge/repositories/2246" alt="PaddlePaddle%2FPaddleNLP | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 
 ## News 📢
 
-* **2024.04.24 [PaddleNLP v2.8](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.8.0)**：自研极致收敛的RsLoRA+算法，大幅提升PEFT训练收敛速度以及训练效果；引入高性能生成加速到RLHF PPO算法，打破 PPO 训练中生成速度瓶颈，PPO训练性能大幅领先。通用化支持 FastFNN、FusedQKV等多个大模型训练性能优化方式，大模型训练更快、更稳定。
+* **2025.03.17 《DeepSeek-R1满血版单机部署实测》** 🔥🔥🔥 飞桨框架3.0大模型推理部署全面升级，支持多款主流大模型，DeepSeek-R1满血版实现单机部署，吞吐提升一倍！欢迎广大用户开箱体验～现已开启有奖活动：完成DeepSeek-R1-MTP 单机部署任务、提交高质量测评blog，即可实时赢取奖金！💰💰💰
+报名[地址](https://www.wjx.top/vm/OlzzmbG.aspx#)， 活动详情：https://github.com/PaddlePaddle/PaddleNLP/issues/10166 ， 参考文档：https://github.com/PaddlePaddle/PaddleNLP/issues/10157 。
 
-* **2024.01.04 [PaddleNLP v2.7](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.7.1)**： 大模型体验全面升级，统一工具链大模型入口。统一预训练、精调、压缩、推理以及部署等环节的实现代码，到 `PaddleNLP/llm`目录。全新[大模型工具链文档](https://paddlenlp.readthedocs.io/zh/latest/llm/finetune.html)，一站式指引用户从大模型入门到业务部署上线。全断点存储机制 Unified Checkpoint，大大提高大模型存储的通用性。高效微调升级，支持了高效微调+LoRA同时使用，支持了QLoRA等算法。
+* **2025.03.12 [PaddleNLP v3.0 Beta4](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v3.0.0-beta4)**：全面支持 DeepSeek V3/R1/R1-Distill, 及QwQ-32B等热门思考模型。**DeepSeek V3/R1完整版支持FP8、INT8、4-bit量化推理，MTP投机解码**。单机FP8推理输出超**1000 tokens/s**; 4-bit推理输出超**2100 tokens/s**! 发布新版推理部署镜像，热门模型[一键部署](https://paddlenlp.readthedocs.io/zh/latest/llm/server/docs/general_model_inference.html)。推理部署[使用文档](https://paddlenlp.readthedocs.io/zh/latest/llm/docs/predict/index.html)全面更新，体验全面提升！自研下一代通用信息抽取模型 PP-UIE [全新发布](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/application/information_extraction)，支持8K长度信息抽取。新增大模型 Embedding 训练，支持INF-CL超大batch size训练。新增[MergeKit](https://paddlenlp.readthedocs.io/zh/latest/llm/docs/mergekit.html)模型融合工具，缓解对齐代价。低资源训练全面优化，16G小显存可以流畅训练。
 
-* **2023.08.15 [PaddleNLP v2.6](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.6.0)**： 发布[全流程大模型工具链](./llm)，涵盖预训练，精调，压缩，推理以及部署等各个环节，为用户提供端到端的大模型方案和一站式的开发体验；内置[4D并行分布式Trainer](./docs/trainer.md)，[高效微调算法LoRA/Prefix Tuning](./llm#33-lora), [自研INT8/INT4量化算法](./llm#6-量化)等等；全面支持[LLaMA 1/2](./llm/config/llama), [BLOOM](./llm/config/bloom), [ChatGLM 1/2](./llm/config/chatglm), [OPT](./llm/config/opt)等主流大模型
+* **2025.03.06 PaddleNLP 现已支持 Qwen/QwQ-32B 模型**: 其模型参数仅有 32B，但其数学推理、编程能力和通用能力可与具备 671B 参数（其中 37B 被激活）的 DeepSeek-R1 媲美。借助 PaddleNLP 3.0套件，现可实现多种并行策略[微调训练](./llm/README.md)、[高性能推理、低比特量化](./llm/docs/predict/qwen.md)和[服务化部署](./llm/server/README.md)。
 
+* **2025.02.10 PaddleNLP 现已支持 DeepSeek-R1系列模型，[在线使用](https://aistudio.baidu.com/projectdetail/8775758)**：依托全新的 PaddleNLP 3.0套件，DeepSeek-R1系列模型现已全面支持。凭借数据并行、数据分组切分并行、模型并行、流水线并行以及专家并行等一系列先进的分布式训练能力，结合 Paddle 框架独有的列稀疏注意力掩码表示技术——FlashMask 方法，DeepSeek-R1系列模型在训练过程中显著降低了显存消耗，同时取得了卓越的训练性能提升。
+
+<details><summary> <b>点击展开</b> </summary><div>
+
+* **2025.02.20 🔥🔥《PP-UIE 信息抽取智能引擎全新升级》** 强化零样本学习能力，支持极少甚至零标注数据实现高效冷启动与迁移学习，显著降低数据标注成本；具备处理长文本能力，支持 8192 个 Token 长度文档信息抽取，实现跨段落识别关键信息，形成完整理解；提供完整可定制化的训练和推理全流程，训练效率相较于 LLama-Factory 实现了1.8倍的提升。
+2月26日（周三）19：00为您深度解析全新 PP-UIE 技术方案及在部署方面的功能、优势与技巧。报名链接：https://www.wjx.top/vm/mBKC6pb.aspx?udsid=606418
+
+* **2024.12.16 [PaddleNLP v3.0 Beta3](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v3.0.0-beta3)**：大模型功能全新升级，新增了 Llama-3.2、DeepSeekV2模型，升级了 TokenizerFast，快速分词，重构了 SFTTrainer，一键开启 SFT 训练。此外，PaddleNLP 还支持了优化器状态的卸载和重载功能，实现了精细化的重新计算，训练性能提升7%。在 Unified Checkpoint 方面，进一步优化了异步保存逻辑，新增 Checkpoint 压缩功能，可节省78.5%存储空间。
+最后，在大模型推理方面，升级 Append Attention，支持了 FP8量化，支持投机解码。
+
+* **2024.12.13 📚《飞桨大模型套件 Unified Checkpoint 技术》**，加速模型存储95%，节省空间78%。支持全分布式策略调整自适应转换，提升模型训练的灵活性与可扩展性。训练-压缩-推理统一存储协议，无需手动转换提升全流程体验。Checkpoint 无损压缩结合异步保存，实现秒级存储并降低模型存储成本。适用于智能制造、指挥交通、医疗健康、金融服务等产业实际场景。12月24日（周二）19：00直播为您详细解读该技术如何优化大模型训练流程。报名链接：https://www.wjx.top/vm/huZkHn9.aspx?udsid=787976
+
+* **2024.11.28 📚《FlashRAG-Paddle | 基于 PaddleNLP 的高效开发与评测 RAG 框架》**，为文本更快更好构建准确嵌入表示、加速推理生成速度。PaddleNLP 支持超大 Batch 嵌入表示学习与多硬件高性能推理，涵盖 INT8/INT4量化技术及多种高效注意力机制优化与 TensorCore 深度优化。内置全环节算子融合技术，使得 FlashRAG 推理性能相比 transformers 动态图提升70%以上，结合检索增强知识输出结果更加准确，带来敏捷高效的使用体验。直播时间：12月3日（周二）19：00。报名链接：https://www.wjx.top/vm/eaBa1vA.aspx?udsid=682361
+
+* **2024.08.08 📚《飞桨产业级大语言模型开发利器 PaddleNLP 3.0 重磅发布》**，训压推全流程贯通，主流模型全覆盖。大模型自动并行，千亿模型训推全流程开箱即用。提供产业级高性能精调与对齐解决方案，压缩推理领先，多硬件适配。覆盖产业级智能助手、内容创作、知识问答、关键信息抽取等应用场景。直播时间：8月22日（周四）19：00。报名链接：https://www.wjx.top/vm/Y2f7FFY.aspx?udsid=143844
+
+* **2024.06.27 [PaddleNLP v3.0 Beta](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v3.0.0-beta0)**：拥抱大模型，体验全升级。统一大模型套件，实现国产计算芯片全流程接入；全面支持飞桨4D 并行配置、高效精调策略、高效对齐算法、高性能推理等大模型产业级应用流程；自研极致收敛的 RsLoRA+算法、自动扩缩容存储机制 Unified Checkpoint 和通用化支持的 FastFFN、FusedQKV 助力大模型训推；主流模型持续支持更新，提供高效解决方案。
+
+* **2024.04.24 [PaddleNLP v2.8](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.8.0)**：自研极致收敛的 RsLoRA+算法，大幅提升 PEFT 训练收敛速度以及训练效果；引入高性能生成加速到 RLHF PPO 算法，打破 PPO 训练中生成速度瓶颈，PPO 训练性能大幅领先。通用化支持 FastFFN、FusedQKV 等多个大模型训练性能优化方式，大模型训练更快、更稳定。
+</div></details>
+
+## 特性
+
+### <a href=#多硬件训推一体> 🔧 多硬件训推一体 </a>
+
+支持英伟达 GPU、昆仑 XPU、昇腾 NPU、燧原 GCU 和海光 DCU 等多个硬件的大模型和自然语言理解模型训练和推理，套件接口支持硬件快速切换，大幅降低硬件切换研发成本。
+当前支持的自然语言理解模型：[多硬件自然语言理解模型列表](./docs/model_zoo/model_list_multy_device.md)
+
+### <a href=#高效易用的预训练> 🚀 高效易用的预训练 </a>
+
+支持纯数据并行策略、分组参数切片的数据并行策略、张量模型并行策略和流水线模型并行策略的4D 高性能训练，Trainer 支持分布式策略配置化，降低复杂分布式组合带来的使用成本；
+[Unified Checkpoint 大模型存储工具](./llm/docs/unified_checkpoint.md)可以使得训练断点支持机器资源动态扩缩容恢复。此外，异步保存，模型存储可加速95%，Checkpoint 压缩，可节省78.5%存储空间。
+
+### <a href=#高效精调> 🤗 高效精调 </a>
+
+精调算法深度结合零填充数据流和 [FlashMask](./llm/docs/flashmask.md) 高性能算子，降低训练无效数据填充和计算，大幅提升精调训练吞吐。
+
+### <a href=#无损压缩和高性能推理> 🎛️ 无损压缩和高性能推理 </a>
+
+大模型套件高性能推理模块内置动态插入和全环节算子融合策略，极大加快并行推理速度。底层实现细节封装化，实现开箱即用的高性能并行推理能力。
+
+## 文档
+更多详细文档, 请访问 [PaddleNLP Documentation](https://paddlenlp.readthedocs.io/).
+
+------------------------------------------------------------------------------------------
+
+## 模型支持
+
+* 模型参数已支持 LLaMA 系列、Baichuan 系列、Bloom 系列、ChatGLM 系列、Gemma 系列、Mistral 系列、OPT 系列和 Qwen 系列，详细列表👉【LLM】模型参数支持列表如下：
+
+|                                                模型系列                                                 | 模型名称                                                                                                                                                                                                                                                                                                                                                                                      |
+|:-------------------------------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [PP-UIE](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/application/information_extraction) | paddlenlp/PP-UIE-0.5B, paddlenlp/PP-UIE-1.5B, paddlenlp/PP-UIE-7B, paddlenlp/PP-UIE-14B                                                                                                                                                                                                                                                                                                       |
+|            [LLaMA](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)             | facebook/llama-7b, facebook/llama-13b, facebook/llama-30b, facebook/llama-65b                                                                                                                                                                                                                                                                                                                 |
+|            [Llama2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)            | meta-llama/Llama-2-7b, meta-llama/Llama-2-7b-chat, meta-llama/Llama-2-13b, meta-llama/Llama-2-13b-chat, meta-llama/Llama-2-70b, meta-llama/Llama-2-70b-chat                                                                                                                                                                                                                                   |
+|            [Llama3](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)            | meta-llama/Meta-Llama-3-8B, meta-llama/Meta-Llama-3-8B-Instruct, meta-llama/Meta-Llama-3-70B, meta-llama/Meta-Llama-3-70B-Instruct                                                                                                                                                                                                                                                            |
+|           [Llama3.1](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)           | meta-llama/Meta-Llama-3.1-8B, meta-llama/Meta-Llama-3.1-8B-Instruct, meta-llama/Meta-Llama-3.1-70B, meta-llama/Meta-Llama-3.1-70B-Instruct, meta-llama/Meta-Llama-3.1-405B, meta-llama/Meta-Llama-3.1-405B-Instruct, meta-llama/Llama-Guard-3-8B                                                                                                                                              |
+|           [Llama3.2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)           | meta-llama/Llama-3.2-1B, meta-llama/Llama-3.2-1B-Instruct, meta-llama/Llama-3.2-3B, meta-llama/Llama-3.2-3B-Instruct, meta-llama/Llama-Guard-3-1B                                                                                                                                                                                                                                             |
+|           [Llama3.3](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/llama)           | meta-llama/Llama-3.3-70B-Instruct                                                                                                                                                                                                                                                                                                                                                             |
+|         [Baichuan](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/baichuan)          | baichuan-inc/Baichuan-7B, baichuan-inc/Baichuan-13B-Base, baichuan-inc/Baichuan-13B-Chat                                                                                                                                                                                                                                                                                                      |
+|         [Baichuan2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/baichuan)         | baichuan-inc/Baichuan2-7B-Base, baichuan-inc/Baichuan2-7B-Chat, baichuan-inc/Baichuan2-13B-Base, baichuan-inc/Baichuan2-13B-Chat                                                                                                                                                                                                                                                              |
+|            [Bloom](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/bloom)             | bigscience/bloom-560m, bigscience/bloom-560m-bf16, bigscience/bloom-1b1, bigscience/bloom-3b, bigscience/bloom-7b1, bigscience/bloomz-560m, bigscience/bloomz-1b1, bigscience/bloomz-3b, bigscience/bloomz-7b1-mt, bigscience/bloomz-7b1-p3, bigscience/bloomz-7b1, bellegroup/belle-7b-2m                                                                                                    |
+|          [ChatGLM](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/chatglm/)          | THUDM/chatglm-6b, THUDM/chatglm-6b-v1.1                                                                                                                                                                                                                                                                                                                                                       |
+|         [ChatGLM2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/chatglm2)          | THUDM/chatglm2-6b                                                                                                                                                                                                                                                                                                                                                                             |
+|         [ChatGLM3](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/chatglm2)          | THUDM/chatglm3-6b                                                                                                                                                                                                                                                                                                                                                                             |
+|       [DeepSeekV2](https://github.com/PaddlePaddle/PaddleNLP/blob/develop/llm/config/deepseek-v2)       | deepseek-ai/DeepSeek-V2, deepseek-ai/DeepSeek-V2-Chat, deepseek-ai/DeepSeek-V2-Lite, deepseek-ai/DeepSeek-V2-Lite-Chat, deepseek-ai/DeepSeek-Coder-V2-Base, deepseek-ai/DeepSeek-Coder-V2-Instruct, deepseek-ai/DeepSeek-Coder-V2-Lite-Base, deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct                                                                                                      |
+|       [DeepSeekV3](https://github.com/PaddlePaddle/PaddleNLP/blob/develop/llm/config/deepseek-v2)       | deepseek-ai/DeepSeek-V3, deepseek-ai/DeepSeek-V3-Base                                                                                                                                                                                                                                                                                                                                         |
+|      [DeepSeek-R1](https://github.com/PaddlePaddle/PaddleNLP/blob/develop/llm/config/deepseek-v2)       | deepseek-ai/DeepSeek-R1, deepseek-ai/DeepSeek-R1-Zero, deepseek-ai/DeepSeek-R1-Distill-Llama-70B, deepseek-ai/DeepSeek-R1-Distill-Llama-8B, deepseek-ai/DeepSeek-R1-Distill-Qwen-14B, deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B, deepseek-ai/DeepSeek-R1-Distill-Qwen-32B, deepseek-ai/DeepSeek-R1-Distill-Qwen-7B                                                                            |
+|            [Gemma](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/gemma)             | google/gemma-7b, google/gemma-7b-it, google/gemma-2b, google/gemma-2b-it                                                                                                                                                                                                                                                                                                                      |
+|          [Mistral](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/mistral)           | mistralai/Mistral-7B-Instruct-v0.3, mistralai/Mistral-7B-v0.1                                                                                                                                                                                                                                                                                                                                 |
+|          [Mixtral](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/mixtral)           | mistralai/Mixtral-8x7B-Instruct-v0.1                                                                                                                                                                                                                                                                                                                                                          |
+|              [OPT](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/opt)               | facebook/opt-125m, facebook/opt-350m, facebook/opt-1.3b, facebook/opt-2.7b, facebook/opt-6.7b, facebook/opt-13b, facebook/opt-30b, facebook/opt-66b, facebook/opt-iml-1.3b, opt-iml-max-1.3b                                                                                                                                                                                                  |
+|             [Qwen](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)             | qwen/qwen-7b, qwen/qwen-7b-chat, qwen/qwen-14b, qwen/qwen-14b-chat, qwen/qwen-72b, qwen/qwen-72b-chat,                                                                                                                                                                                                                                                                                        |
+|           [Qwen1.5](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)            | Qwen/Qwen1.5-0.5B, Qwen/Qwen1.5-0.5B-Chat, Qwen/Qwen1.5-1.8B, Qwen/Qwen1.5-1.8B-Chat, Qwen/Qwen1.5-4B, Qwen/Qwen1.5-4B-Chat, Qwen/Qwen1.5-7B, Qwen/Qwen1.5-7B-Chat, Qwen/Qwen1.5-14B, Qwen/Qwen1.5-14B-Chat, Qwen/Qwen1.5-32B, Qwen/Qwen1.5-32B-Chat, Qwen/Qwen1.5-72B, Qwen/Qwen1.5-72B-Chat, Qwen/Qwen1.5-110B, Qwen/Qwen1.5-110B-Chat, Qwen/Qwen1.5-MoE-A2.7B, Qwen/Qwen1.5-MoE-A2.7B-Chat |
+|            [Qwen2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)             | Qwen/Qwen2-0.5B, Qwen/Qwen2-0.5B-Instruct, Qwen/Qwen2-1.5B, Qwen/Qwen2-1.5B-Instruct, Qwen/Qwen2-7B, Qwen/Qwen2-7B-Instruct, Qwen/Qwen2-72B, Qwen/Qwen2-72B-Instruct, Qwen/Qwen2-57B-A14B, Qwen/Qwen2-57B-A14B-Instruct                                                                                                                                                                       |
+|          [Qwen2-Math](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)          | Qwen/Qwen2-Math-1.5B, Qwen/Qwen2-Math-1.5B-Instruct, Qwen/Qwen2-Math-7B, Qwen/Qwen2-Math-7B-Instruct, Qwen/Qwen2-Math-72B, Qwen/Qwen2-Math-72B-Instruct, Qwen/Qwen2-Math-RM-72B                                                                                                                                                                                                               |
+|           [Qwen2.5](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)            | Qwen/Qwen2.5-0.5B, Qwen/Qwen2.5-0.5B-Instruct, Qwen/Qwen2.5-1.5B, Qwen/Qwen2.5-1.5B-Instruct, Qwen/Qwen2.5-3B, Qwen/Qwen2.5-3B-Instruct, Qwen/Qwen2.5-7B, Qwen/Qwen2.5-7B-Instruct, Qwen/Qwen2.5-7B-Instruct-1M, Qwen/Qwen2.5-14B, Qwen/Qwen2.5-14B-Instruct, Qwen/Qwen2.5-14B-Instruct-1M, Qwen/Qwen2.5-32B, Qwen/Qwen2.5-32B-Instruct, Qwen/Qwen2.5-72B, Qwen/Qwen2.5-72B-Instruct          |
+|         [Qwen2.5-Math](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)         | Qwen/Qwen2.5-Math-1.5B, Qwen/Qwen2.5-Math-1.5B-Instruct, Qwen/Qwen2.5-Math-7B, Qwen/Qwen2.5-Math-7B-Instruct, Qwen/Qwen2.5-Math-72B, Qwen/Qwen2.5-Math-72B-Instruct, Qwen/Qwen2.5-Math-RM-72B                                                                                                                                                                                                 |
+|        [Qwen2.5-Coder](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)         | Qwen/Qwen2.5-Coder-1.5B, Qwen/Qwen2.5-Coder-1.5B-Instruct, Qwen/Qwen2.5-Coder-7B, Qwen/Qwen2.5-Coder-7B-Instruct                                                                                                                                                                                                                                                                              |
+|             [QwQ](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/qwen/)              | Qwen/QwQ-32B, Qwen/QwQ-32B-Preview                                                                                                                                                                                                                                                                                                                                                            |
+|            [Yuan2](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/llm/config/yuan/)             | IEITYuan/Yuan2-2B, IEITYuan/Yuan2-51B, IEITYuan/Yuan2-102B                                                                                                                                                                                                                                                                                                                                    |
+
+* 4D 并行和算子优化已支持 LLaMA 系列、Baichuan 系列、Bloom 系列、ChatGLM 系列、Gemma 系列、Mistral 系列、OPT 系列和 Qwen 系列，【LLM】模型4D 并行和算子支持列表如下：
+
+| 模型名称/并行能力支持 | 数据并行 | 张量模型并行 |          | 参数分片并行 |        |        | 流水线并行 |
+|:---------------------:|:--------:|:------------:|:--------:|:------------:|:------:|:------:|:----------:|
+|                       |          |   基础能力   | 序列并行 |    stage1    | stage2 | stage3 |            |
+|         Llama         |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|         Qwen          |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|        Qwen1.5        |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|         Qwen2         |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|     Mixtral(moe)      |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     🚧     |
+|        Mistral        |    ✅     |      ✅       |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|       Baichuan        |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|       Baichuan2       |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|        ChatGLM        |    ✅     |      ✅       |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|       ChatGLM2        |    ✅     |      🚧      |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|       ChatGLM3        |    ✅     |      🚧      |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|         Bloom         |    ✅     |      ✅       |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|      GPT-2/GPT-3      |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|          OPT          |    ✅     |      ✅       |    🚧    |      ✅       |   ✅    |   ✅    |     🚧     |
+|         Gemma         |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     ✅      |
+|         Yuan2         |    ✅     |      ✅       |    ✅     |      ✅       |   ✅    |   ✅    |     🚧     |
+
+* 大模型预训练、精调（包含 SFT、PEFT 技术）、对齐、量化已支持 LLaMA 系列、Baichuan 系列、Bloom 系列、ChatGLM 系列、Mistral 系列、OPT 系列和 Qwen 系列，【LLM】模型预训练、精调、对齐、量化支持列表如下：
+
+
+| Model                                      | Pretrain | SFT | LoRA | FlashMask | Prefix Tuning | DPO/SimPO/ORPO/KTO | RLHF | Mergekit | Quantization |
+|--------------------------------------------|:--------:|:---:|:----:|:---------:|:-------------:|:------------------:|:----:|:--------:|:------------:|
+| [Llama](./llm/config/llama)                |    ✅     |  ✅  |  ✅   |     ✅     |       ✅       |         ✅          |  ✅   |    ✅     |      ✅       |
+| [Qwen](./llm/config/qwen)                  |    ✅     |  ✅  |  ✅   |     ✅     |       ✅       |         ✅          |  🚧  |    ✅     |      🚧      |
+| [Mixtral](./llm/config/mixtral)            |    ✅     |  ✅  |  ✅   |    🚧     |      🚧       |         ✅          |  🚧  |    ✅     |      🚧      |
+| [Mistral](./llm/config/mistral)            |    ✅     |  ✅  |  ✅   |    🚧     |       ✅       |         ✅          |  🚧  |    ✅     |      🚧      |
+| [Baichuan/Baichuan2](./llm/config/llama)   |    ✅     |  ✅  |  ✅   |     ✅     |       ✅       |         ✅          |  🚧  |    ✅     |      ✅       |
+| [ChatGLM-6B](./llm/config/chatglm)         |    ✅     |  ✅  |  ✅   |    🚧     |       ✅       |         🚧         |  🚧  |    ✅     |      ✅       |
+| [ChatGLM2/ChatGLM3](./llm/config/chatglm2) |    ✅     |  ✅  |  ✅   |    🚧     |       ✅       |         ✅          |  🚧  |    ✅     |      ✅       |
+| [Bloom](./llm/config/bloom)                |    ✅     |  ✅  |  ✅   |    🚧     |       ✅       |         🚧         |  🚧  |    ✅     |      ✅       |
+| [GPT-3](./llm/config/gpt-3)                |    ✅     |  ✅  |  🚧  |    🚧     |      🚧       |         🚧         |  🚧  |    ✅     |      🚧      |
+| [OPT](./llm/config/opt)                    |    ✅     |  ✅  |  ✅   |    🚧     |      🚧       |         🚧         |  🚧  |    ✅     |      🚧      |
+| [Gemma](./llm/config/gemma)                |    ✅     |  ✅  |  ✅   |    🚧     |      🚧       |         ✅          |  🚧  |    ✅     |      🚧      |
+| [Yuan](./llm/config/yuan)                  |    ✅     |  ✅  |  ✅   |    🚧     |      🚧       |         ✅          |  🚧  |    ✅     |      🚧      |
+* [大模型推理](./llm/docs/predict/inference.md)已支持 LLaMA 系列、Qwen 系列、DeepSeek 系列、Mistral 系列、ChatGLM 系列、Bloom 系列和 Baichuan 系列，支持 Weight Only INT8及 INT4推理，支持 WAC（权重、激活、Cache KV）进行 INT8、FP8量化的推理，【LLM】模型推理支持列表如下：
+
+|           模型名称/量化类型支持            | FP16/BF16 | WINT8 | WINT4 | INT8-A8W8 | FP8-A8W8 | INT8-A8W8C8 |
+|:------------------------------------------:|:---------:|:-----:|:-----:|:---------:|:--------:|:-----------:|
+|    [LLaMA](./llm/docs/predict/llama.md)    |     ✅     |   ✅   |   ✅   |     ✅     |    ✅     |      ✅      |
+|     [Qwen](./llm/docs/predict/qwen.md)     |     ✅     |   ✅   |   ✅   |     ✅     |    ✅     |      ✅      |
+| [DeepSeek](./llm/docs/predict/deepseek.md) |     ✅     |   ✅   |   ✅   |    🚧     |    ✅     |     🚧      |
+|   [Qwen-Moe](./llm/docs/predict/qwen.md)   |     ✅     |   ✅   |   ✅   |    🚧     |    🚧    |     🚧      |
+|  [Mixtral](./llm/docs/predict/mixtral.md)  |     ✅     |   ✅   |   ✅   |    🚧     |    🚧    |     🚧      |
+|                  ChatGLM                   |     ✅     |   ✅   |   ✅   |    🚧     |    🚧    |     🚧      |
+|                   Bloom                    |     ✅     |   ✅   |   ✅   |    🚧     |    🚧    |     🚧      |
+|                  BaiChuan                  |     ✅     |   ✅   |   ✅   |     ✅     |    ✅     |     🚧      |
 
 ## 安装
 
 ### 环境依赖
 
-- python >= 3.7
-- paddlepaddle >= 2.6.0
-- 如需大模型功能，请使用 paddlepaddle-gpu >= 2.6.0
+* python >= 3.8
+* paddlepaddle >= 3.0.0rc1
 
-### pip安装
+如果您尚未安装 PaddlePaddle，请参考 [飞桨官网](https://www.paddlepaddle.org.cn/) 进行安装。
+
+### pip 安装
 
 ```shell
-pip install --upgrade paddlenlp
+pip install --upgrade paddlenlp==3.0.0b4
 ```
 
 或者可通过以下命令安装最新 develop 分支代码：
@@ -57,253 +195,87 @@ pip install --upgrade paddlenlp
 pip install --pre --upgrade paddlenlp -f https://www.paddlepaddle.org.cn/whl/paddlenlp.html
 ```
 
-更多关于PaddlePaddle和PaddleNLP安装的详细教程请查看[Installation](./docs/get_started/installation.rst)。
+更多关于 PaddlePaddle 和 PaddleNLP 安装的详细教程请查看[Installation](./docs/get_started/installation.rst)。
+
+------------------------------------------------------------------------------------------
 
 ## 快速开始
 
-
 ### 大模型文本生成
 
-PaddleNLP提供了方便易用的Auto API，能够快速的加载模型和Tokenizer。这里以使用 `linly-ai/chinese-llama-2-7b` 大模型做文本生成为例：
+PaddleNLP 提供了方便易用的 Auto API，能够快速的加载模型和 Tokenizer。这里以使用 `Qwen/Qwen2-0.5B` 模型做文本生成为例：
 
 ```python
 >>> from paddlenlp.transformers import AutoTokenizer, AutoModelForCausalLM
->>> tokenizer = AutoTokenizer.from_pretrained("linly-ai/chinese-llama-2-7b")
->>> model = AutoModelForCausalLM.from_pretrained("linly-ai/chinese-llama-2-7b", dtype="float16")
+>>> tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-0.5B")
+>>> model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-0.5B", dtype="float16")
 >>> input_features = tokenizer("你好！请自我介绍一下。", return_tensors="pd")
 >>> outputs = model.generate(**input_features, max_length=128)
->>> tokenizer.batch_decode(outputs[0])
-['\n你好！我是一个AI语言模型，可以回答你的问题和提供帮助。']
+>>> print(tokenizer.batch_decode(outputs[0], skip_special_tokens=True))
+['我是一个AI语言模型，我可以回答各种问题，包括但不限于：天气、新闻、历史、文化、科学、教育、娱乐等。请问您有什么需要了解的吗？']
 ```
 
-### 一键UIE预测
+### 大模型预训练
 
-PaddleNLP提供[一键预测功能](./docs/model_zoo/taskflow.md)，无需训练，直接输入数据即可开放域抽取结果。这里以信息抽取-命名实体识别任务，UIE模型为例：
+```shell
+git clone https://github.com/PaddlePaddle/PaddleNLP.git && cd PaddleNLP # 如已clone或下载PaddleNLP可跳过
+mkdir -p llm/data && cd llm/data
+wget https://bj.bcebos.com/paddlenlp/models/transformers/llama/data/llama_openwebtext_100k.bin
+wget https://bj.bcebos.com/paddlenlp/models/transformers/llama/data/llama_openwebtext_100k.idx
+cd .. # change folder to PaddleNLP/llm
+# 如需使用use_fused_rms_norm=true，需要前往slm/model_zoo/gpt-3/external_ops安装fused_ln
+python -u run_pretrain.py ./config/qwen/pretrain_argument_0p5b.json
+```
+
+### 大模型 SFT 精调
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleNLP.git && cd PaddleNLP # 如已clone或下载PaddleNLP可跳过
+mkdir -p llm/data && cd llm/data
+wget https://bj.bcebos.com/paddlenlp/datasets/examples/AdvertiseGen.tar.gz && tar -zxvf AdvertiseGen.tar.gz
+cd .. # change folder to PaddleNLP/llm
+python -u run_finetune.py ./config/qwen/sft_argument_0p5b.json
+```
+
+更多大模型全流程步骤，请参考[飞桨大模型套件](./llm)介绍。
+另外我们还提供了快速微调方式, 无需 clone 源代码：
 
 ```python
->>> from pprint import pprint
->>> from paddlenlp import Taskflow
+from paddlenlp.trl import SFTConfig, SFTTrainer
+from datasets import load_dataset
 
->>> schema = ['时间', '选手', '赛事名称'] # Define the schema for entity extraction
->>> ie = Taskflow('information_extraction', schema=schema)
->>> pprint(ie("2月8日上午北京冬奥会自由式滑雪女子大跳台决赛中中国选手谷爱凌以188.25分获得金牌！"))
-[{'时间': [{'end': 6,
-          'probability': 0.9857378532924486,
-          'start': 0,
-          'text': '2月8日上午'}],
-  '赛事名称': [{'end': 23,
-            'probability': 0.8503089953268272,
-            'start': 6,
-            'text': '北京冬奥会自由式滑雪女子大跳台决赛'}],
-  '选手': [{'end': 31,
-          'probability': 0.8981548639781138,
-          'start': 28,
-          'text': '谷爱凌'}]}]
+dataset = load_dataset("ZHUI/alpaca_demo", split="train")
+
+training_args = SFTConfig(output_dir="Qwen/Qwen2.5-0.5B-SFT", device="gpu")
+trainer = SFTTrainer(
+    args=training_args,
+    model="Qwen/Qwen2.5-0.5B-Instruct",
+    train_dataset=dataset,
+)
+trainer.train()
 ```
 
-更多PaddleNLP内容可参考：
-- [大模型全流程工具链](./llm)，包含主流中文大模型的全流程方案。
-- [精选模型库](./legacy/model_zoo)，包含优质预训练模型的端到端全流程使用。
-- [多场景示例](./legacy/examples)，了解如何使用PaddleNLP解决NLP多种技术问题，包含基础技术、系统应用与拓展应用。
-- [交互式教程](https://aistudio.baidu.com/aistudio/personalcenter/thirdview/574995)，在🆓免费算力平台AI Studio上快速学习PaddleNLP。
+更多 PaddleNLP 内容可参考：
 
+* [精选模型库](./slm/model_zoo)，包含优质预训练模型的端到端全流程使用。
+* [多场景示例](./slm/examples)，了解如何使用 PaddleNLP 解决 NLP 多种技术问题，包含基础技术、系统应用与拓展应用。
+* [交互式教程](https://aistudio.baidu.com/aistudio/personalcenter/thirdview/574995)，在🆓免费算力平台 AI Studio 上快速学习 PaddleNLP。
 
-## 特性
-
-#### <a href=#开箱即用的nlp工具集> 📦 开箱即用的NLP工具集 </a>
-
-#### <a href=#丰富完备的中文模型库> 🤗 丰富完备的中文模型库 </a>
-
-#### <a href=#产业级端到端系统范例> 🎛️ 产业级端到端系统范例 </a>
-
-#### <a href=#高性能分布式训练与推理> 🚀 高性能分布式训练与推理 </a>
-
-
-### 开箱即用的NLP工具集
-
-Taskflow提供丰富的**📦开箱即用**的产业级NLP预置模型，覆盖自然语言理解与生成两大场景，提供**💪产业级的效果**与**⚡️极致的推理性能**。
-
-![taskflow1](https://user-images.githubusercontent.com/11793384/159693816-fda35221-9751-43bb-b05c-7fc77571dd76.gif)
-
-更多使用方法可参考[Taskflow文档](./docs/model_zoo/taskflow.md)。
-### 丰富完备的中文模型库
-
-#### 🀄 业界最全的中文预训练模型
-
-精选 45+ 个网络结构和 500+ 个预训练模型参数，涵盖业界最全的中文预训练模型：既包括文心NLP大模型的ERNIE、PLATO等，也覆盖BERT、GPT、RoBERTa、T5等主流结构。通过`AutoModel` API一键⚡**高速下载**⚡。
-
-```python
-from paddlenlp.transformers import *
-
-ernie = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-bert = AutoModel.from_pretrained('bert-wwm-chinese')
-albert = AutoModel.from_pretrained('albert-chinese-tiny')
-roberta = AutoModel.from_pretrained('roberta-wwm-ext')
-electra = AutoModel.from_pretrained('chinese-electra-small')
-gpt = AutoModelForPretraining.from_pretrained('gpt-cpm-large-cn')
-```
-
-针对预训练模型计算瓶颈，可以使用API一键使用文心ERNIE-Tiny全系列轻量化模型，降低预训练模型部署难度。
-
-```python
-# 6L768H
-ernie = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-# 6L384H
-ernie = AutoModel.from_pretrained('ernie-3.0-mini-zh')
-# 4L384H
-ernie = AutoModel.from_pretrained('ernie-3.0-micro-zh')
-# 4L312H
-ernie = AutoModel.from_pretrained('ernie-3.0-nano-zh')
-```
-
-对预训练模型应用范式如语义表示、文本分类、句对匹配、序列标注、问答等，提供统一的API体验。
-
-```python
-import paddle
-from paddlenlp.transformers import *
-
-tokenizer = AutoTokenizer.from_pretrained('ernie-3.0-medium-zh')
-text = tokenizer('自然语言处理')
-
-# 语义表示
-model = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-sequence_output, pooled_output = model(input_ids=paddle.to_tensor([text['input_ids']]))
-# 文本分类 & 句对匹配
-model = AutoModelForSequenceClassification.from_pretrained('ernie-3.0-medium-zh')
-# 序列标注
-model = AutoModelForTokenClassification.from_pretrained('ernie-3.0-medium-zh')
-# 问答
-model = AutoModelForQuestionAnswering.from_pretrained('ernie-3.0-medium-zh')
-```
-
-#### 💯 全场景覆盖的应用示例
-
-覆盖从学术到产业的NLP应用示例，涵盖NLP基础技术、NLP系统应用以及拓展应用。全面基于飞桨核心框架2.0全新API体系开发，为开发者提供飞桨文本领域的最佳实践。
-
-精选预训练模型示例可参考[Model Zoo](./legacy/model_zoo)，更多场景示例文档可参考[examples目录](./legacy/examples)。更有免费算力支持的[AI Studio](https://aistudio.baidu.com)平台的[Notbook交互式教程](https://aistudio.baidu.com/aistudio/personalcenter/thirdview/574995)提供实践。
-
-<details><summary> PaddleNLP预训练模型适用任务汇总（<b>点击展开详情</b>）</summary><div>
-
-| Model              | Sequence Classification | Token Classification | Question Answering | Text Generation | Multiple Choice |
-|:-------------------|-------------------------|----------------------|--------------------|-----------------|-----------------|
-| ALBERT             | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BART               | ✅                       | ✅                    | ✅                  | ✅               | ❌               |
-| BERT               | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BigBird            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BlenderBot         | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| ChineseBERT        | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ConvBERT           | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| CTRL               | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| DistilBERT         | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ELECTRA            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| ERNIE              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| ERNIE-CTM          | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| ERNIE-Doc          | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ERNIE-GEN          | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| ERNIE-Gram         | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ERNIE-M            | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| FNet               | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| Funnel-Transformer | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| GPT                | ✅                       | ✅                    | ❌                  | ✅               | ❌               |
-| LayoutLM           | ✅                       | ✅                    | ❌                  | ❌               | ❌               |
-| LayoutLMv2         | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| LayoutXLM          | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| LUKE               | ❌                       | ✅                    | ✅                  | ❌               | ❌               |
-| mBART              | ✅                       | ❌                    | ✅                  | ❌               | ✅               |
-| MegatronBERT       | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| MobileBERT         | ✅                       | ❌                    | ✅                  | ❌               | ❌               |
-| MPNet              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| NEZHA              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| PP-MiniLM          | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| ProphetNet         | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| Reformer           | ✅                       | ❌                    | ✅                  | ❌               | ❌               |
-| RemBERT            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| RoBERTa            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| RoFormer           | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| SKEP               | ✅                       | ✅                    | ❌                  | ❌               | ❌               |
-| SqueezeBERT        | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| T5                 | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| TinyBERT           | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| UnifiedTransformer | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| XLNet              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-
-</div></details>
-
-可参考[Transformer 文档](/docs/model_zoo/index.rst) 查看目前支持的预训练模型结构、参数和详细用法。
-
-### 产业级端到端系统范例
-
-PaddleNLP针对信息抽取、语义检索、智能问答、情感分析等高频NLP场景，提供了端到端系统范例，打通*数据标注*-*模型训练*-*模型调优*-*预测部署*全流程，持续降低NLP技术产业落地门槛。更多详细的系统级产业范例使用说明请参考[Applications](./legacy/applications)。
-
-#### 🔍 语义检索系统
-
-针对无监督数据、有监督数据等多种数据情况，结合SimCSE、In-batch Negatives、ERNIE-Gram单塔模型等，推出前沿的语义检索方案，包含召回、排序环节，打通训练、调优、高效向量检索引擎建库和查询全流程。
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168514909-8817d79a-72c4-4be1-8080-93d1f682bb46.gif" width="400">
-</div>
-
-
-更多使用说明请参考[语义检索系统](./legacy/applications/neural_search)。
-
-#### ❓ 智能问答系统
-
-基于[🚀RocketQA](https://github.com/PaddlePaddle/RocketQA)技术的检索式问答系统，支持FAQ问答、说明书问答等多种业务场景。
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168514868-1babe981-c675-4f89-9168-dd0a3eede315.gif" width="400">
-</div>
-
-
-更多使用说明请参考[智能问答系统](./legacy/applications/question_answering)与[文档智能问答](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/document_intelligence/doc_vqa)
-
-#### 💌 评论观点抽取与情感分析
-
-基于情感知识增强预训练模型SKEP，针对产品评论进行评价维度和观点抽取，以及细粒度的情感分析。
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168407260-b7f92800-861c-4207-98f3-2291e0102bbe.png" width="400">
-</div>
-
-更多使用说明请参考[情感分析](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/sentiment_analysis)。
-
-#### 🎙️ 智能语音指令解析
-
-集成了[PaddleSpeech](https://github.com/PaddlePaddle/PaddleSpeech)和[百度开放平台](https://ai.baidu.com/)的语音识别和[UIE](./legacy/model_zoo/uie)通用信息抽取等技术，打造智能一体化的语音指令解析系统范例，该方案可应用于智能语音填单、智能语音交互、智能语音检索等场景，提高人机交互效率。
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/16698950/168589100-a6c6f346-97bb-47b2-ac26-8d50e71fddc5.png" width="400">
-</div>
-
-更多使用说明请参考[智能语音指令解析](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/speech_cmd_analysis)。
-
-### 高性能分布式训练与推理
-
-#### 🚀 Fleet：飞桨4D混合并行分布式训练技术
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168515134-513f13e0-9902-40ef-98fa-528271dcccda.png" width="300">
-</div>
-
-
-更多关于千亿级AI模型的分布式训练使用说明可参考[GPT-3](./legacy/model_zoo/gpt-3)。
+------------------------------------------------------------------------------------------
 
 ## 社区交流
 
-- 微信扫描二维码并填写问卷，回复小助手关键词（NLP）之后，即可加入交流群领取福利
+* 微信扫描二维码并填写问卷，即可加入交流群与众多社区开发者以及官方团队深度交流.
 
-  - 与众多社区开发者以及官方团队深度交流。
-  - 10G重磅NLP学习大礼包！
-
-  <div align="center">
-  <img src="https://user-images.githubusercontent.com/11987277/245085922-0aa68d24-00ff-442e-9c53-2f1e898151ce.png" width="150" height="150" />
-  </div>
+<div align="center">
+    <img src="https://github.com/user-attachments/assets/3a58cc9f-69c7-4ccb-b6f5-73e966b8051a" width="150" height="150" />
+</div>
 
 ## Citation
 
-如果PaddleNLP对您的研究有帮助，欢迎引用
+如果 PaddleNLP 对您的研究有帮助，欢迎引用
 
-```
+```bibtex
 @misc{=paddlenlp,
     title={PaddleNLP: An Easy-to-use and High Performance NLP Library},
     author={PaddleNLP Contributors},
@@ -314,8 +286,8 @@ PaddleNLP针对信息抽取、语义检索、智能问答、情感分析等高�
 
 ## Acknowledge
 
-我们借鉴了Hugging Face的[Transformers](https://github.com/huggingface/transformers)🤗关于预训练模型使用的优秀设计，在此对Hugging Face作者及其开源社区表示感谢。
+我们借鉴了 Hugging Face 的[Transformers](https://github.com/huggingface/transformers)🤗关于预训练模型使用的优秀设计，在此对 Hugging Face 作者及其开源社区表示感谢。
 
 ## License
 
-PaddleNLP遵循[Apache-2.0开源协议](./LICENSE)。
+PaddleNLP 遵循[Apache-2.0开源协议](./LICENSE)。

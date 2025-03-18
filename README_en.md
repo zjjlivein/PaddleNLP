@@ -1,12 +1,13 @@
-
 [简体中文🀄](./README.md) | **English🌎**
 
-<p align="center"> <img src="https://user-images.githubusercontent.com/1371212/175816733-8ec25eb0-9af3-4380-9218-27c154518258.png" align="middle"  width="500" /> </p>
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/1371212/175816733-8ec25eb0-9af3-4380-9218-27c154518258.png" align="middle"  width="500" />
+</p>
 
 ------------------------------------------------------------------------------------------
 
 <p align="center">
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
+    <a href="https://paddlenlp.readthedocs.io/en/latest/?badge=latest"><img src="https://readthedocs.org/projects/paddlenlp/badge/?version=latest">
     <a href="https://github.com/PaddlePaddle/PaddleNLP/releases"><img src="https://img.shields.io/github/v/release/PaddlePaddle/PaddleNLP?color=ffa"></a>
     <a href=""><img src="https://img.shields.io/badge/python-3.7+-aff.svg"></a>
     <a href=""><img src="https://img.shields.io/badge/os-linux%2C%20win%2C%20mac-pink.svg"></a>
@@ -15,31 +16,63 @@
     <a href="https://pypi.org/project/paddlenlp/"><img src="https://img.shields.io/pypi/dm/paddlenlp?color=9cf"></a>
     <a href="https://github.com/PaddlePaddle/PaddleNLP/issues"><img src="https://img.shields.io/github/issues/PaddlePaddle/PaddleNLP?color=9cc"></a>
     <a href="https://github.com/PaddlePaddle/PaddleNLP/stargazers"><img src="https://img.shields.io/github/stars/PaddlePaddle/PaddleNLP?color=ccf"></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
 </p>
 
-<h4 align="center"> <a href=#features> Features </a> | <a href=#installation> Installation </a> | <a href=#quick-start> Quick Start </a> | <a href=#api-reference> API Reference </a> | <a href=#community> Community </a>
+<h4 align="center">
+    <a href=#Features> Features </a> |
+    <a href=#Support-Models> Supported Models </a> |
+    <a href=#Installation> Installation </a> |
+    <a href=#Quick-start> Quick Start </a> |
+    <a href=#community> Community </a>
+</h4>
 
-**PaddleNLP** is a NLP library that is both **easy to use** and **powerful**. It aggregates high-quality pretrained models in the industry and provides a **plug-and-play** development experience, covering a model library for various NLP scenarios. With practical examples from industry practices, PaddleNLP can meet the needs of developers who require **flexible customization**.
+**PaddleNLP** is a Large Language Model (LLM) development suite based on the PaddlePaddle deep learning framework, supporting efficient large model training, lossless compression, and high-performance inference on various hardware devices. With its **simplicity** and **ultimate performance**, PaddleNLP is dedicated to helping developers achieve efficient industrial applications of large models.
 
 ## News 📢
 
-* **2024.01.04 [PaddleNLP v2.7](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.7.0)**: The LLM experience is fully upgraded, and the tool chain LLM entrance is unified. Unify the implementation code of pre-training, fine-tuning, compression, inference and deployment to the `PaddleNLP/llm` directory. The new [LLM Toolchain Documentation](https://paddlenlp.readthedocs.io/zh/latest/llm/finetune.html) provides one-stop guidance for users from getting started with LLM to business deployment and launch. The full breakpoint storage mechanism Unified Checkpoint greatly improves the versatility of LLM storage. Efficient fine-tuning upgrade supports the simultaneous use of efficient fine-tuning + LoRA, and supports QLoRA and other algorithms.
+* **2024.06.27 [PaddleNLP v3.0 Beta](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v3.0.0-beta0)**：Embrace large models and experience a complete upgrade. With a unified large model suite, we achieve full-process access to domestically produced computing chips. We fully support industrial-level application processes for large models, such as PaddlePaddle's 4D parallel configuration, efficient fine-tuning strategies, efficient alignment algorithms, and high-performance reasoning. Our developed RsLoRA+ algorithm, full checkpoint storage mechanism Unified Checkpoint, and generalized support for FastFNN and FusedQKV all contribute to the training and inference of large models. We continuously support updates to mainstream models for providing efficient solutions.
 
-* **2023.08.15 [PaddleNLP v2.6](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.6.0)**: Release [Full-process LLM toolchain](./llm) , covering all aspects of pre-training, fine-tuning, compression, inference and deployment, providing users with end-to-end LLM solutions and one-stop development experience; built-in [4D parallel distributed Trainer](./docs/trainer.md ), [Efficient fine-tuning algorithm LoRA/Prefix Tuning](./llm/README.md#2-%E7%B2%BE%E8%B0%83), [Self-developed INT8/INT4 quantization algorithm](./llm/README.md#4-%E9%87%8F%E5%8C%96), etc.; fully supports [LLaMA 1/2](./llm/config/llama), [BLOOM](./llm/config/bloom), [ChatGLM 1/2](./llm/config/chatglm), [OPT](./llm/config/opt) and other mainstream LLMs.
+* **2024.04.24 [PaddleNLP v2.8](https://github.com/PaddlePaddle/PaddleNLP/releases/tag/v2.8.0)**：Our self-developed RsLoRA+ algorithm with extreme convergence significantly improves the convergence speed and training effectiveness of PEFT training. By introducing high-performance generation acceleration into the RLHF PPO algorithm, we have broken through the generation speed bottleneck in PPO training, achieving a significant lead in PPO training performance. We generally support multiple large model training performance optimization methods such as FastFFN and FusedQKV, making large model training faster and more stable.
+
+## Features
+
+### <a href=#Integrated training and inference on multiple hardware platforms> 🔧 Integrated training and inference on multiple hardware platforms </a>
+
+Our development suit supports large model training and inference on multiple hardware platforms, including NVIDIA GPUs, Kunlun XPUs, Ascend NPUs, Enflame GCUs, and Hygon DCUs. The toolkit's interface allows for quick hardware switching, significantly reducing research and development costs associated with hardware transitions.
+
+### <a href=Efficient and easy-to-use pre-training> 🚀 Efficient and easy-to-use pre-training </a>
+
+We support 4D high-performance training with data parallelism, sharding parallelism, tensor parallelism, and pipeline parallelism. The Trainer supports configurable distributed strategies, reducing the cost associated with complex distributed combinations. The Unified Checkpoint large model storage format supports dynamic scaling of model parameter distribution during training, thereby reducing the migration cost caused by hardware switching.
+
+### <a href=#Efficient fine-tuning> 🤗 Efficient fine-tuning </a>
+
+The fine-tuning algorithms are deeply integrated with zero-padding data streams and high-performance FlashMask operators, reducing invalid data padding and computation during training, and significantly improving the throughput of fine-tuning training.
+
+### <a href=#Lossless compression and high-performance inference> 🎛️ Lossless compression and high-performance inference </a>
+
+The high-performance inference module of the large model toolkit incorporates dynamic insertion and operator fusion strategies throughout the entire process, greatly accelerating parallel inference speed. The underlying implementation details are encapsulated, enabling out-of-the-box high-performance parallel inference capabilities.
+
+## Documentation
+For detailed documentation, visit the [PaddleNLP Documentation](https://paddlenlp.readthedocs.io/).
+
+------------------------------------------------------------------------------------------
+
+## Support Models
+
+Detailed list 👉 [Supported Model List](https://github.com/PaddlePaddle/PaddleNLP/issues/8663)
 
 ## Installation
 
 ### Prerequisites
 
-* python >= 3.7
-* paddlepaddle >= 2.6.0
+* python >= 3.8
+* paddlepaddle >= 3.0.0b0
 
-More information about PaddlePaddle installation please refer to [PaddlePaddle's Website](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/conda/linux-conda.html).
+### Pip Installation
 
-### Python pip Installation
-
-```
-pip install --upgrade paddlenlp
+```shell
+pip install --upgrade paddlenlp==3.0.0b3
 ```
 
 or you can install the latest develop branch code with the following command:
@@ -48,231 +81,56 @@ or you can install the latest develop branch code with the following command:
 pip install --pre --upgrade paddlenlp -f https://www.paddlepaddle.org.cn/whl/paddlenlp.html
 ```
 
+More information about PaddlePaddle installation please refer to [PaddlePaddle's Website](https://www.paddlepaddle.org.cn).
 
-## Features
-
-#### <a href=#out-of-box-nlp-toolset> 📦 Out-of-Box NLP Toolset </a>
-
-#### <a href=#awesome-chinese-model-zoo> 🤗 Awesome Chinese Model Zoo </a>
-
-#### <a href=#industrial-end-to-end-system> 🎛️ Industrial End-to-end System </a>
-
-#### <a href=#high-performance-distributed-training-and-inference> 🚀 High Performance Distributed Training and Inference </a>
-
-
-### Out-of-Box NLP Toolset
-
-Taskflow aims to provide off-the-shelf NLP pre-built task covering NLU and NLG technique, in the meanwhile with extremely fast inference satisfying industrial scenario.
-
-![taskflow1](https://user-images.githubusercontent.com/11793384/159693816-fda35221-9751-43bb-b05c-7fc77571dd76.gif)
-
-For more usage please refer to [Taskflow Docs](./docs/model_zoo/taskflow.md).
-
-### Awesome Chinese Model Zoo
-
-#### 🀄 Comprehensive Chinese Transformer Models
-
-We provide **45+** network architectures and over **500+** pretrained models. Not only includes all the SOTA model like ERNIE, PLATO and SKEP released by Baidu, but also integrates most of the high-quality Chinese pretrained model developed by other organizations. Use `AutoModel` API to **⚡SUPER FAST⚡** download pretrained models of different architecture. We welcome all developers to contribute your Transformer models to PaddleNLP!
-
-```python
-from paddlenlp.transformers import *
-
-ernie = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-bert = AutoModel.from_pretrained('bert-wwm-chinese')
-albert = AutoModel.from_pretrained('albert-chinese-tiny')
-roberta = AutoModel.from_pretrained('roberta-wwm-ext')
-electra = AutoModel.from_pretrained('chinese-electra-small')
-gpt = AutoModelForPretraining.from_pretrained('gpt-cpm-large-cn')
-```
-
-Due to the computation limitation, you can use the ERNIE-Tiny light models to accelerate the deployment of pretrained models.
-```python
-# 6L768H
-ernie = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-# 6L384H
-ernie = AutoModel.from_pretrained('ernie-3.0-mini-zh')
-# 4L384H
-ernie = AutoModel.from_pretrained('ernie-3.0-micro-zh')
-# 4L312H
-ernie = AutoModel.from_pretrained('ernie-3.0-nano-zh')
-```
-Unified API experience for NLP task like semantic representation, text classification, sentence matching, sequence labeling, question answering, etc.
-
-```python
-import paddle
-from paddlenlp.transformers import *
-
-tokenizer = AutoTokenizer.from_pretrained('ernie-3.0-medium-zh')
-text = tokenizer('natural language processing')
-
-# Semantic Representation
-model = AutoModel.from_pretrained('ernie-3.0-medium-zh')
-sequence_output, pooled_output = model(input_ids=paddle.to_tensor([text['input_ids']]))
-# Text Classificaiton and Matching
-model = AutoModelForSequenceClassification.from_pretrained('ernie-3.0-medium-zh')
-# Sequence Labeling
-model = AutoModelForTokenClassification.from_pretrained('ernie-3.0-medium-zh')
-# Question Answering
-model = AutoModelForQuestionAnswering.from_pretrained('ernie-3.0-medium-zh')
-```
-
-#### Wide-range NLP Task Support
-
-PaddleNLP provides rich examples covering mainstream NLP task to help developers accelerate problem solving. You can find our powerful transformer [Model Zoo](./legacy/model_zoo), and wide-range NLP application [examples](./legacy/examples) with detailed instructions.
-
-Also you can run our interactive [Notebook tutorial](https://aistudio.baidu.com/aistudio/personalcenter/thirdview/574995) on AI Studio, a powerful platform with **FREE** computing resource.
-
-<details><summary> PaddleNLP Transformer model summary (<b>click to show details</b>) </summary><div>
-
-| Model              | Sequence Classification | Token Classification | Question Answering | Text Generation | Multiple Choice |
-| :----------------- | ----------------------- | -------------------- | ------------------ | --------------- | --------------- |
-| ALBERT             | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BART               | ✅                       | ✅                    | ✅                  | ✅               | ❌               |
-| BERT               | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BigBird            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| BlenderBot         | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| ChineseBERT        | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ConvBERT           | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| CTRL               | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| DistilBERT         | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ELECTRA            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| ERNIE              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| ERNIE-CTM          | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| ERNIE-Doc          | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ERNIE-GEN          | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| ERNIE-Gram         | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| ERNIE-M            | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| FNet               | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| Funnel-Transformer | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| GPT                | ✅                       | ✅                    | ❌                  | ✅               | ❌               |
-| LayoutLM           | ✅                       | ✅                    | ❌                  | ❌               | ❌               |
-| LayoutLMv2         | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| LayoutXLM          | ❌                       | ✅                    | ❌                  | ❌               | ❌               |
-| LUKE               | ❌                       | ✅                    | ✅                  | ❌               | ❌               |
-| mBART              | ✅                       | ❌                    | ✅                  | ❌               | ✅               |
-| MegatronBERT       | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| MobileBERT         | ✅                       | ❌                    | ✅                  | ❌               | ❌               |
-| MPNet              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| NEZHA              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| PP-MiniLM          | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| ProphetNet         | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| Reformer           | ✅                       | ❌                    | ✅                  | ❌               | ❌               |
-| RemBERT            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| RoBERTa            | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-| RoFormer           | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| SKEP               | ✅                       | ✅                    | ❌                  | ❌               | ❌               |
-| SqueezeBERT        | ✅                       | ✅                    | ✅                  | ❌               | ❌               |
-| T5                 | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| TinyBERT           | ✅                       | ❌                    | ❌                  | ❌               | ❌               |
-| UnifiedTransformer | ❌                       | ❌                    | ❌                  | ✅               | ❌               |
-| XLNet              | ✅                       | ✅                    | ✅                  | ❌               | ✅               |
-
-</div></details>
-
-For more pretrained model usage, please refer to [Transformer API Docs](./docs/model_zoo/index.rst).
-
-### Industrial End-to-end System
-
-We provide high value scenarios including information extraction, semantic retrieval, question answering high-value.
-
-For more details industrial cases please refer to [Applications](./legacy/applications).
-
-
-#### 🔍 Neural Search System
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168514909-8817d79a-72c4-4be1-8080-93d1f682bb46.gif" width="400">
-</div>
-
-
-For more details please refer to [Neural Search](./legacy/applications/neural_search).
-
-#### ❓ Question Answering System
-
-We provide question answering pipeline which can support FAQ system, Document-level Visual Question answering system based on [🚀RocketQA](https://github.com/PaddlePaddle/RocketQA).
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168514868-1babe981-c675-4f89-9168-dd0a3eede315.gif" width="400">
-</div>
-
-
-For more details please refer to [Question Answering](./legacy/applications/question_answering) and [Document VQA](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/document_intelligence/doc_vqa).
-
-
-#### 💌 Opinion Extraction and Sentiment Analysis
-
-We build an opinion extraction system for product review and fine-grained sentiment analysis based on [SKEP](https://arxiv.org/abs/2005.05635) Model.
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168407260-b7f92800-861c-4207-98f3-2291e0102bbe.png" width="300">
-</div>
-
-
-For more details please refer to [Sentiment Analysis](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/sentiment_analysis).
-
-#### 🎙️ Speech Command Analysis
-
-Integrated ASR Model, Information Extraction, we provide a speech command analysis pipeline that show how to use PaddleNLP and [PaddleSpeech](https://github.com/PaddlePaddle/PaddleSpeech) to solve Speech + NLP real scenarios.
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168412618-04897a47-79c9-4fe7-a054-5dc1f6a1f75c.png" width="500">
-</div>
-
-
-For more details please refer to [Speech Command Analysis](https://github.com/PaddlePaddle/PaddleNLP/tree/release/2.8/applications/speech_cmd_analysis).
-
-### High Performance Distributed Training and Inference
-
-#### 🚀 Fleet: 4D Hybrid Distributed Training
-
-<div align="center">
-    <img src="https://user-images.githubusercontent.com/11793384/168515134-513f13e0-9902-40ef-98fa-528271dcccda.png" width="300">
-</div>
-
-
-For more super large-scale model pre-training details please refer to [GPT-3](./legacy/model_zoo/gpt-3).
-
+------------------------------------------------------------------------------------------
 
 ## Quick Start
 
-**Taskflow** aims to provide off-the-shelf NLP pre-built task covering NLU and NLG scenario, in the meanwhile with extremely fast inference satisfying industrial applications.
+### Text generation with large language model
+
+PaddleNLP provides a convenient and easy-to-use Auto API, which can quickly load models and Tokenizers. Here, we use the `Qwen/Qwen2-0.5B` large model as an example for text generation:
 
 ```python
-from paddlenlp import Taskflow
-
-# Chinese Word Segmentation
-seg = Taskflow("word_segmentation")
-seg("第十四届全运会在西安举办")
->>> ['第十四届', '全运会', '在', '西安', '举办']
-
-# POS Tagging
-tag = Taskflow("pos_tagging")
-tag("第十四届全运会在西安举办")
->>> [('第十四届', 'm'), ('全运会', 'nz'), ('在', 'p'), ('西安', 'LOC'), ('举办', 'v')]
-
-# Named Entity Recognition
-ner = Taskflow("ner")
-ner("《孤女》是2010年九州出版社出版的小说，作者是余兼羽")
->>> [('《', 'w'), ('孤女', '作品类_实体'), ('》', 'w'), ('是', '肯定词'), ('2010年', '时间类'), ('九州出版社', '组织机构类'), ('出版', '场景事件'), ('的', '助词'), ('小说', '作品类_概念'), ('，', 'w'), ('作者', '人物类_概念'), ('是', '肯定词'), ('余兼羽', '人物类_实体')]
-
-# Dependency Parsing
-ddp = Taskflow("dependency_parsing")
-ddp("9月9日上午纳达尔在亚瑟·阿什球场击败俄罗斯球员梅德韦杰夫")
->>> [{'word': ['9月9日', '上午', '纳达尔', '在', '亚瑟·阿什球场', '击败', '俄罗斯', '球员', '梅德韦杰夫'], 'head': [2, 6, 6, 5, 6, 0, 8, 9, 6], 'deprel': ['ATT', 'ADV', 'SBV', 'MT', 'ADV', 'HED', 'ATT', 'ATT', 'VOB']}]
-
-# Sentiment Analysis
-senta = Taskflow("sentiment_analysis")
-senta("这个产品用起来真的很流畅，我非常喜欢")
->>> [{'text': '这个产品用起来真的很流畅，我非常喜欢', 'label': 'positive', 'score': 0.9938690066337585}]
+>>> from paddlenlp.transformers import AutoTokenizer, AutoModelForCausalLM
+>>> tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2-0.5B")
+>>> model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen2-0.5B", dtype="float16")
+>>> input_features = tokenizer("你好！请自我介绍一下。", return_tensors="pd")
+>>> outputs = model.generate(**input_features, max_length=128)
+>>> print(tokenizer.batch_decode(outputs[0], skip_special_tokens=True))
+['我是一个AI语言模型，我可以回答各种问题，包括但不限于：天气、新闻、历史、文化、科学、教育、娱乐等。请问您有什么需要了解的吗？']
 ```
 
-## API Reference
+### Pre-training for large language model
 
-- Support [LUGE](https://www.luge.ai/) dataset loading and compatible with Hugging Face [Datasets](https://huggingface.co/datasets). For more details please refer to [Dataset API](https://paddlenlp.readthedocs.io/zh/latest/data_prepare/dataset_list.html).
-- Using Hugging Face style API to load 500+ selected transformer models and download with fast speed. For more information please refer to [Transformers API](https://paddlenlp.readthedocs.io/zh/latest/model_zoo/index.html).
-- One-line of code to load pre-trained word embedding. For more usage please refer to [Embedding API](https://paddlenlp.readthedocs.io/zh/latest/model_zoo/embeddings.html).
+```shell
+git clone https://github.com/PaddlePaddle/PaddleNLP.git && cd PaddleNLP # if cloned or downloaded, can skip this step
+mkdir -p llm/data && cd llm/data
+wget https://bj.bcebos.com/paddlenlp/models/transformers/llama/data/llama_openwebtext_100k.bin
+wget https://bj.bcebos.com/paddlenlp/models/transformers/llama/data/llama_openwebtext_100k.idx
+cd .. # change folder to PaddleNLP/llm
+python -u -m paddle.distributed.launch --gpus "0,1,2,3,4,5,6,7" run_pretrain.py ./config/llama/pretrain_argument.json
+```
 
-Please find all PaddleNLP API Reference from our [readthedocs](https://paddlenlp.readthedocs.io/).
+### SFT finetuning forlarge language model
+
+```shell
+git clone https://github.com/PaddlePaddle/PaddleNLP.git && cd PaddleNLP # if cloned or downloaded, can skip this step
+mkdir -p llm/data && cd llm/data
+wget https://bj.bcebos.com/paddlenlp/datasets/examples/AdvertiseGen.tar.gz && tar -zxvf AdvertiseGen.tar.gz
+cd .. # change folder to PaddleNLP/llm
+python -u -m paddle.distributed.launch --gpus "0,1,2,3,4,5,6,7" run_finetune.py ./config/llama/sft_argument.json
+```
+
+For more steps in the entire large model process, please refer to the[Large Model Full-Process Suite](./llm).
+
+For more PaddleNLP content, please refer to:
+
+* [Model Library](./slm/model_zoo)，which includes end-to-end usage of high-quality pre-trained models.
+* [Multi-scenario Examples](./slm/examples)，to understand how to use PaddleNLP to solve various NLP technical problems, including basic techniques, system applications, and extended applications.
+* [Interactive Tutorial](https://aistudio.baidu.com/aistudio/personalcenter/thirdview/574995)，to quickly learn PaddleNLP on the free computing platform AI Studio.
+
+------------------------------------------------------------------------------------------
 
 ## Community
 
@@ -285,15 +143,14 @@ To connect with other users and contributors, welcome to join our [Slack channel
 Scan the QR code below with your Wechat⬇️. You can access to official technical exchange group. Look forward to your participation.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/11987277/245085922-0aa68d24-00ff-442e-9c53-2f1e898151ce.png" width="150" height="150" />
+    <img src="https://github.com/user-attachments/assets/3a58cc9f-69c7-4ccb-b6f5-73e966b8051a" width="150" height="150" />
 </div>
-
-
 
 ## Citation
 
-If you find PaddleNLP useful in your research, please consider cite
-```
+If you find PaddleNLP useful in your research, please consider citing
+
+```bibtext
 @misc{=paddlenlp,
     title={PaddleNLP: An Easy-to-use and High Performance NLP Library},
     author={PaddleNLP Contributors},

@@ -37,7 +37,7 @@ from numpy import allclose, ndarray, transpose
 from paddle import Tensor
 from paddle.nn import Layer
 
-from paddlenlp.utils.distributed import distributed_gather
+from paddlenlp.utils.distributed import distributed_allgather, distributed_gather
 from paddlenlp.utils.env import CONFIG_NAME, PADDLE_WEIGHTS_NAME, PYTORCH_WEIGHTS_NAME
 from paddlenlp.utils.import_utils import (
     is_package_available,
@@ -46,6 +46,7 @@ from paddlenlp.utils.import_utils import (
 )
 from paddlenlp.utils.log import logger
 from paddlenlp.utils.serialization import load_torch
+from paddlenlp.utils.tools import get_env_device
 
 if TYPE_CHECKING:
     from paddlenlp.transformers import PretrainedConfig, PretrainedModel
@@ -1204,11 +1205,20 @@ class ConversionMixin:
 
     @classmethod
     def get_tensor_parallel_convert_actions(
-        cls, config: PretrainedConfig, loaded_state_dict_keys, is_split=True, ignore_error=False
+        cls,
+        config: PretrainedConfig,
+        loaded_state_dict_keys,
+        is_split=True,
+        ignore_error=False,
+        base_model_prefix=None,
     ):
         name_action_mappings = cls._get_tensor_parallel_mappings(config, is_split=is_split)
-        state_keys_map = cls._resolve_prefix_keys(name_action_mappings.keys(), loaded_state_dict_keys, ignore_error)
+        state_keys_map = cls._resolve_prefix_keys(
+            name_action_mappings.keys(), loaded_state_dict_keys, ignore_error, base_model_prefix=base_model_prefix
+        )
         for k, v in state_keys_map.items():
+            if k not in name_action_mappings:
+                continue
             name_action_mappings[v] = name_action_mappings.pop(k)
         return name_action_mappings
 
@@ -1269,7 +1279,10 @@ class ConversionMixin:
         for key in state_dict.keys():
             tensor = state_dict[key]
             if key in name_action_mappings:
-                ret = distributed_gather(tensor, group=mp_group, offload=True)
+                if get_env_device() == "xpu":
+                    ret = distributed_allgather(tensor, group=mp_group, offload=True)
+                else:
+                    ret = distributed_gather(tensor, group=mp_group, offload=True)
                 action = name_action_mappings.pop(key)
                 tensor = action(ret) if is_dst else None
             else:
@@ -1284,7 +1297,7 @@ class ConversionMixin:
 
         if len(name_action_mappings) > 0:
             for x in name_action_mappings.keys():
-                logger.warning(f"key <{x}> need to merge tensor parallel but we can't find in model state.")
+                logger.debug(f"key <{x}> need to merge tensor parallel but we can't find in model state.")
 
         return state_dict_to_save
 
@@ -1304,11 +1317,20 @@ class ConversionMixin:
         raise NotImplementedError
 
     @staticmethod
-    def _resolve_prefix_keys(state_keys_base, state_keys_real, ignore_error=False):
+    def _resolve_prefix_keys(state_keys_base, state_keys_real, ignore_error=False, base_model_prefix=None):
         # state_keys_map base to real
         state_keys_map = {}
 
-        state_keys_base = set(state_keys_base)
+        if base_model_prefix:
+            for k in state_keys_real:
+                if k.startswith("lm_head."):
+                    continue
+                # remove real key name `base_model_prefix` + '.'
+                state_keys_map[k[len(base_model_prefix + ".") :]] = k
+            return state_keys_map
+
+        # sorted by length，match from long to short for A.key B.key ...
+        state_keys_base = sorted(state_keys_base, key=lambda x: len(x), reverse=True)
         state_keys_real = set(state_keys_real)
 
         for key in state_keys_base:
@@ -1318,7 +1340,7 @@ class ConversionMixin:
                     break
             if key not in state_keys_map:
                 if not ignore_error:
-                    logger.error(f"tensor parallel conversion: could not find name {key} in loaded state dict!")
+                    logger.debug(f"tensor parallel conversion: could not find name {key} in loaded state dict!")
             else:
                 state_keys_real.remove(state_keys_map[key])
 

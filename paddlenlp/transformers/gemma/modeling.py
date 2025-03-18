@@ -35,9 +35,7 @@ except ImportError:
 
 try:
     from paddle.distributed.fleet.utils.sequence_parallel_utils import (
-        ColumnSequenceParallelLinear,
         GatherOp,
-        RowSequenceParallelLinear,
         ScatterOp,
         mark_as_sequence_parallel_parameter,
     )
@@ -54,7 +52,10 @@ from paddlenlp.transformers.model_outputs import (
 )
 from paddlenlp.transformers.model_utils import PretrainedModel, register_base_model
 
+from .. import linear_utils
+from ..linear_utils import Linear
 from ..segment_parallel_utils import ReshardLayer
+from ..utils import caculate_llm_per_token_flops
 from .configuration import (
     GEMMA_PRETRAINED_INIT_CONFIGURATION,
     GEMMA_PRETRAINED_RESOURCE_FILES_MAP,
@@ -422,11 +423,11 @@ class GemmaMLP(nn.Layer):
         self.tensor_parallel_degree = config.tensor_parallel_degree
 
         if config.sequence_parallel:
-            ColumnParallelLinear = ColumnSequenceParallelLinear
-            RowParallelLinear = RowSequenceParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnSequenceParallelLinear
+            RowParallelLinear = linear_utils.RowSequenceParallelLinear
         else:
-            ColumnParallelLinear = mpu.ColumnParallelLinear
-            RowParallelLinear = mpu.RowParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnParallelLinear
+            RowParallelLinear = linear_utils.RowParallelLinear
 
         if config.tensor_parallel_degree > 1:
             self.gate_proj = ColumnParallelLinear(
@@ -448,9 +449,9 @@ class GemmaMLP(nn.Layer):
                 has_bias=False,
             )
         else:
-            self.gate_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
-            self.up_proj = nn.Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
-            self.down_proj = nn.Linear(self.intermediate_size, self.hidden_size, bias_attr=False)
+            self.gate_proj = Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
+            self.up_proj = Linear(self.hidden_size, self.intermediate_size, bias_attr=False)
+            self.down_proj = Linear(self.intermediate_size, self.hidden_size, bias_attr=False)
 
     def forward(self, x):
         # GeGLU
@@ -509,11 +510,11 @@ class GemmaAttention(nn.Layer):
                 self.use_fused_rope = False
 
         if config.sequence_parallel:
-            ColumnParallelLinear = ColumnSequenceParallelLinear
-            RowParallelLinear = RowSequenceParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnSequenceParallelLinear
+            RowParallelLinear = linear_utils.RowSequenceParallelLinear
         else:
-            ColumnParallelLinear = mpu.ColumnParallelLinear
-            RowParallelLinear = mpu.RowParallelLinear
+            ColumnParallelLinear = linear_utils.ColumnParallelLinear
+            RowParallelLinear = linear_utils.RowParallelLinear
 
         if config.tensor_parallel_degree > 1:
             self.q_proj = ColumnParallelLinear(
@@ -537,29 +538,29 @@ class GemmaAttention(nn.Layer):
                     gather_output=False,
                 )
             else:
-                self.k_proj = nn.Linear(
+                self.k_proj = Linear(
                     self.hidden_size,
                     self.config.num_key_value_heads * self.head_dim,
                     bias_attr=False,
                 )
-                self.v_proj = nn.Linear(
+                self.v_proj = Linear(
                     self.hidden_size,
                     self.config.num_key_value_heads * self.head_dim,
                     bias_attr=False,
                 )
 
         else:
-            self.q_proj = nn.Linear(
+            self.q_proj = Linear(
                 self.hidden_size,
                 self.config.num_attention_heads * self.head_dim,
                 bias_attr=False,
             )
-            self.k_proj = nn.Linear(
+            self.k_proj = Linear(
                 self.hidden_size,
                 self.config.num_key_value_heads * self.head_dim,
                 bias_attr=False,
             )
-            self.v_proj = nn.Linear(
+            self.v_proj = Linear(
                 self.hidden_size,
                 self.config.num_key_value_heads * self.head_dim,
                 bias_attr=False,
@@ -573,7 +574,7 @@ class GemmaAttention(nn.Layer):
                 input_is_parallel=True,
             )
         else:
-            self.o_proj = nn.Linear(
+            self.o_proj = Linear(
                 self.config.num_attention_heads * self.head_dim,
                 self.hidden_size,
                 bias_attr=False,
@@ -897,6 +898,37 @@ class GemmaPretrainedModel(PretrainedModel):
     _keys_to_ignore_on_load_unexpected = []
     _keep_in_fp32_modules = ["inv_freq", "rotary_emb", "cos_cached", "sin_cached"]
 
+    def _get_model_flops(self):
+        if hasattr(self.config, "seq_length"):
+            seq_length = self.config.seq_length
+        else:
+            seq_length = 2048
+
+        return caculate_llm_per_token_flops(
+            hidden_size=self.config.hidden_size,
+            intermediate_size=self.config.intermediate_size,
+            layer_num=self.config.num_hidden_layers,
+            vocab_size=self.config.vocab_size,
+            seq_length=seq_length,
+            recompute=False,
+        )
+
+    def _get_hardware_flops(self):
+        if hasattr(self.config, "seq_length"):
+            seq_length = self.config.seq_length
+        else:
+            seq_length = 2048
+
+        return caculate_llm_per_token_flops(
+            hidden_size=self.config.hidden_size,
+            intermediate_size=self.config.intermediate_size,
+            layer_num=self.config.num_hidden_layers,
+            vocab_size=self.config.vocab_size,
+            seq_length=seq_length,
+            recompute=self.config.recompute,
+            recompute_granularity=self.config.recompute_granularity,
+        )
+
     @classmethod
     def _get_name_mappings(cls, config: GemmaConfig) -> List[StateDictNameMapping]:
         mappings: list[StateDictNameMapping] = []
@@ -992,10 +1024,11 @@ class GemmaPretrainedModel(PretrainedModel):
                 nn.Linear,
                 nn.Embedding,
                 mpu.VocabParallelEmbedding,
-                mpu.ColumnParallelLinear,
                 mpu.RowParallelLinear,
-                ColumnSequenceParallelLinear,
-                RowSequenceParallelLinear,
+                mpu.ColumnParallelLinear,
+                linear_utils.RowSequenceParallelLinear,
+                linear_utils.ColumnSequenceParallelLinear,
+                GemmaLMHead,
             ),
         ):
             # In the dygraph mode, use the `set_value` to reset the parameter directly,
@@ -1100,7 +1133,7 @@ class GemmaModel(GemmaPretrainedModel):
         else:
             expanded_attn_mask = _make_causal_mask(input_shape, past_key_values_length=past_key_values_length)
         # Convert bool attention_mask to float attention mask, which will be added to attention_scores later
-        expanded_attn_mask = paddle.where(expanded_attn_mask, 0.0, paddle.finfo(dtype).min).astype(dtype)
+        expanded_attn_mask = paddle.where(expanded_attn_mask.to("bool"), 0.0, paddle.finfo(dtype).min).astype(dtype)
         return expanded_attn_mask
 
     @paddle.jit.not_to_static
@@ -1523,15 +1556,32 @@ class GemmaForCausalLM(GemmaPretrainedModel):
 
         # if labels is None，means we need full output, instead of tensor_parallel_output
         # tensor_parallel_output is togather with ParallelCrossEntropy
-        tensor_parallel_output = (
-            self.config.tensor_parallel_output and labels is not None and self.config.tensor_parallel_degree > 1
-        )
+        tensor_parallel_output = self.config.tensor_parallel_output and self.config.tensor_parallel_degree > 1
 
-        logits = self.lm_head(hidden_states, tensor_parallel_output=tensor_parallel_output)
+        if labels is not None and self.config.use_fused_linear_cross_entropy:
+            from paddlenlp_kernel.triton.cut_cross_entropy import linear_cross_entropy
 
-        loss = None
-        if labels is not None:
-            loss = self.criterion(logits, labels)
+            assert (
+                self.config.tensor_parallel_degree <= 1
+            ), "The argument `use_fused_linear_cross_entropy` is imcompatiable with tensor parallel "
+
+            masked_lm_loss = linear_cross_entropy(hidden_states, self.lm_head.weight, targets=labels)
+
+            binary_sequence = paddle.where(
+                masked_lm_loss > 0, paddle.ones_like(masked_lm_loss), paddle.zeros_like(masked_lm_loss)
+            )
+            count = paddle.sum(binary_sequence)
+            if count == 0:
+                loss = paddle.sum(masked_lm_loss * binary_sequence)
+            else:
+                loss = paddle.sum(masked_lm_loss * binary_sequence) / count
+            logits = None
+        else:
+            logits = self.lm_head(hidden_states, tensor_parallel_output=tensor_parallel_output)
+
+            loss = None
+            if labels is not None:
+                loss = self.criterion(logits, labels)
 
         if not return_dict:
             output = (logits,) + outputs[1:]

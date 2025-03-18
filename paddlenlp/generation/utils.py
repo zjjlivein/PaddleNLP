@@ -594,6 +594,17 @@ class GenerationMixin(object):
             kwargs["use_fp16_decoding"] = True
         self.prepare_fast_entry(kwargs)
 
+    def set_pad_token_id(self, pad_token_id, eos_token_id):
+        if pad_token_id is None and eos_token_id is not None:
+            logger.warning(
+                "Setting `pad_token_id` to `eos_token_id`:{} for " "open-end generation.".format(eos_token_id)
+            )
+            if isinstance(eos_token_id, list):
+                pad_token_id = eos_token_id[0]
+            else:
+                pad_token_id = eos_token_id
+        return pad_token_id
+
     @paddle.no_grad()
     def generate(
         self,
@@ -731,7 +742,7 @@ class GenerationMixin(object):
                 # ['是的', '嗯嗯']
         """
         if generation_config is None:
-            if self.generation_config._from_model_config:
+            if self.generation_config is None or self.generation_config._from_model_config:
                 new_generation_config = GenerationConfig.from_model_config(self.config)
                 if new_generation_config != self.generation_config:
                     logger.warning(
@@ -869,9 +880,7 @@ class GenerationMixin(object):
                     "`streamer` cannot be used with beam search (yet!). Make sure that `num_beams` is set to 1."
                 )
 
-        if pad_token_id is None and eos_token_id is not None:
-            print("Setting `pad_token_id` to `eos_token_id`:{} for " "open-end generation.".format(eos_token_id))
-            pad_token_id = eos_token_id
+        pad_token_id = self.set_pad_token_id(pad_token_id, eos_token_id)
 
         if generation_config.max_length != 0 and generation_config.max_new_tokens == DEFAULT_MAX_NEW_TOKENS:
             logger.warning("`max_length` will be deprecated in future releases, use `max_new_tokens` instead.")
@@ -1207,6 +1216,8 @@ class GenerationMixin(object):
                 probs = TopPProcess(probs, top_p, min_tokens_to_keep)
             if paddle.device.is_compiled_with_custom_device("gcu"):
                 probs = paddle.cast(probs, "float32")
+            if paddle.device.is_compiled_with_xpu():
+                probs = paddle.cast(probs, "float32")
 
             # multinomial already support fp16 and bf16 currently, fix issue: https://github.com/PaddlePaddle/Paddle/issues/51852
             next_tokens = paddle.multinomial(probs)
@@ -1233,7 +1244,6 @@ class GenerationMixin(object):
                 )
 
             next_scores = paddle.index_sample(origin_probs, next_tokens)
-
             if eos_token_id is not None:
                 next_tokens = paddle.where(unfinished_flag, next_tokens, paddle.full_like(next_tokens, pad_token_id))
 
@@ -1333,6 +1343,7 @@ class GenerationMixin(object):
         min_tokens_to_keep=1,
     ):
 
+        pad_token_id = self.set_pad_token_id(pad_token_id, eos_token_id)
         logits_processors = logits_processors if logits_processors is not None else LogitsProcessorList()
 
         if paddle.is_tensor(top_k) and not paddle.is_tensor(top_p):
@@ -1372,7 +1383,9 @@ class GenerationMixin(object):
             del model_inputs["use_cache"]
             return self(**model_inputs, **immutable)
 
-        def _post_process_(outputs, input_ids, cur_len, origin_len, scores, unfinished_flag, model_kwargs):
+        def _post_process_(
+            outputs, input_ids, cur_len, origin_len, scores, unfinished_flag, model_kwargs, pad_token_id
+        ):
             if isinstance(outputs, tuple):
                 logits = outputs[0]
             elif isinstance(outputs, ModelOutput):
@@ -1405,7 +1418,6 @@ class GenerationMixin(object):
 
             next_scores = paddle.index_sample(origin_probs, next_tokens)
             scores = self.update_scores_for_generation(scores, next_scores, cur_len - origin_len, unfinished_flag)
-
             if eos_token_id is not None:
                 next_tokens = paddle.where(unfinished_flag, next_tokens, paddle.full_like(next_tokens, pad_token_id))
 
@@ -1422,19 +1434,11 @@ class GenerationMixin(object):
 
         outputs = _forward_(**model_kwargs)
         input_ids, scores, unfinished_flag, model_kwargs = _post_process_(
-            outputs, input_ids, cur_len_gpu, origin_len_gpu, scores, unfinished_flag, model_kwargs
+            outputs, input_ids, cur_len_gpu, origin_len_gpu, scores, unfinished_flag, model_kwargs, pad_token_id
         )
 
-        if hasattr(paddle.framework, "_no_check_dy2st_diff"):
-            # TODO(daisiming): _no_check_dy2st_diff is used to turn off the checking of behavior
-            # inconsistency between dynamic graph and static graph. _no_check_dy2st_diff should be
-            # removed after static graphs support inplace and stride.
-            with paddle.framework._no_check_dy2st_diff():
-                paddle.increment(cur_len)
-                paddle.increment(cur_len_gpu)
-        else:
-            paddle.increment(cur_len)
-            paddle.increment(cur_len_gpu)
+        cur_len += 1
+        cur_len_gpu += 1
 
         attn_mask = model_kwargs["attention_mask"]
         # make the shape of attention_mask = (-1, -1, -1, -1) in dy2static.
@@ -1442,36 +1446,19 @@ class GenerationMixin(object):
         model_kwargs["cache"] = outputs[1] if isinstance(outputs, tuple) else None
         max_new_tokens = paddle.full([1], max_new_tokens + cur_len - 1, dtype="int64")
 
-        if hasattr(paddle.framework, "_no_check_dy2st_diff"):
-            # TODO(daisiming): _no_check_dy2st_diff is used to turn off the checking of behavior
-            # inconsistency between dynamic graph and static graph. _no_check_dy2st_diff should be
-            # removed after static graphs support inplace and stride.
-            with paddle.framework._no_check_dy2st_diff():
-                while cur_len < max_new_tokens and paddle.any(unfinished_flag):
-                    input_ids, scores, unfinished_flag, model_kwargs = _post_process_(
-                        _forward_(**model_kwargs),
-                        input_ids,
-                        cur_len_gpu,
-                        origin_len_gpu,
-                        scores,
-                        unfinished_flag,
-                        model_kwargs,
-                    )
-                    paddle.increment(cur_len)
-                    paddle.increment(cur_len_gpu)
-        else:
-            while cur_len < max_new_tokens and paddle.any(unfinished_flag):
-                input_ids, scores, unfinished_flag, model_kwargs = _post_process_(
-                    _forward_(**model_kwargs),
-                    input_ids,
-                    cur_len_gpu,
-                    origin_len_gpu,
-                    scores,
-                    unfinished_flag,
-                    model_kwargs,
-                )
-                paddle.increment(cur_len)
-                paddle.increment(cur_len_gpu)
+        while cur_len < max_new_tokens and paddle.any(unfinished_flag):
+            input_ids, scores, unfinished_flag, model_kwargs = _post_process_(
+                _forward_(**model_kwargs),
+                input_ids,
+                cur_len_gpu,
+                origin_len_gpu,
+                scores,
+                unfinished_flag,
+                model_kwargs,
+                pad_token_id,
+            )
+            cur_len += 1
+            cur_len_gpu += 1
 
         return input_ids[:, origin_len:], scores
 

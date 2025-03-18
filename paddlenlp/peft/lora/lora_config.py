@@ -76,6 +76,10 @@ class LoRAConfig:
     do_qat: bool = field(default=False, metadata={"help": "Whether the lora model would do quant-aware training"})
     rslora: bool = field(default=False, metadata={"help": "Whether to use RsLoRA"})
     pissa: bool = field(default=False, metadata={"help": "Whether to use Pissa: https://arxiv.org/pdf/2404.02948.pdf"})
+    loraga: bool = field(default=False, metadata={"help": "Whether to LoRA-GA"})
+    use_mora: bool = field(
+        default=False, metadata={"help": "Whether to use MoRA: https://arxiv.org/pdf/2405.12130.pdf"}
+    )
     lora_plus_scale: float = field(default=1.0, metadata={"help": "Lora B scale in LoRA+"})
     base_model_name_or_path: Optional[str] = field(
         default=None, metadata={"help": "The name of the base model to use."}
@@ -86,6 +90,10 @@ class LoRAConfig:
             "help": "Whether to use quick lora, The use of Quick LoRa will only take effect when lora_dropout is set to 0."
         },
     )
+    lora_use_mixer: bool = field(
+        default=False,
+        metadata={"help": "Whether to use mos lora."},
+    )
 
     def __post_init__(self):
         if self.use_quick_lora and self.lora_dropout > 0:
@@ -94,6 +102,11 @@ class LoRAConfig:
                 "We will automatically set `use_quick_lora` to `False` to avoid potential inconsistencies."
             )
             self.use_quick_lora = False
+        if self.merge_weights:
+            logger.error(
+                "'merge_weights' is deprecated and will be removed in a future version. "
+                "Please apply model.merge() or model.unmerge() to merge/unmerge LoRA weight to base model."
+            )
 
     @property
     def scaling(self):
@@ -169,3 +182,15 @@ class LoRAConfig:
             json_object = json.load(file)
 
         return json_object
+
+
+@dataclass
+class LoRAAutoConfig(LoRAConfig):
+    use_intermediate_api: bool = field(
+        default=False,
+        metadata={"help": "Weather to use auto_parallel intermediate api"},
+    )
+    pipeline_parallel_degree: bool = field(
+        default=False,
+        metadata={"help": "Weather to use pipeline parallel"},
+    )

@@ -296,6 +296,22 @@ def require_package(*package_names):
     return decorator
 
 
+def skip_platform(*platform):
+    """decorator which can detect that it will skip the specific platform
+
+    Args:
+        platform (str): the name of platform, including win32, cygwin, linux, and darwin
+    """
+
+    def decorator(func):
+        for plat in platform:
+            if sys.platform.startswith(plat):
+                return unittest.skip(f"platform<{plat}> matched, so to skip this test")(func)
+        return func
+
+    return decorator
+
+
 def is_slow_test() -> bool:
     """check whether is the slow test
 
@@ -495,7 +511,7 @@ def require_paddle_up_to_2_gpus(test_case):
 def require_gpu(min_gpus: int = 1):
     def actual_decorator(func):
         gpu_count = paddle.device.cuda.device_count()
-
+        print("gpu count: ", gpu_count)
         if gpu_count < min_gpus:
             return unittest.skip(f"test requires {min_gpus} GPUs")(func)
 
